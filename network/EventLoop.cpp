@@ -13,7 +13,8 @@ EventLoop::EventLoop () :
     _is_running(false),
     _quit(false),
     _thread_id(std::this_thread::get_id()),
-    _wakeup_channel(nullptr)
+    _poller(std::make_unique<Poller>()),
+    _timer_queue(std::make_unique<TimerQueue>(this))
 {
     if (t_loopInThisThread) {
         std::cerr << "EventLoop is created before in thread: " << t_loopInThisThread->_thread_id << std::endl;
@@ -21,12 +22,9 @@ EventLoop::EventLoop () :
         t_loopInThisThread = this;
     }
 
-    _poller = new Poller();
-    _timer_queue = new TimerQueue(this);
-
     _wakeup_fd = eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
     if (_wakeup_fd != -1) {
-        _wakeup_channel = ::new Channel("wakeup_fd", _wakeup_fd, this);
+        _wakeup_channel = std::make_unique<Channel>("wakeup_fd", _wakeup_fd, this);
         _wakeup_channel->enableReadEvent();
         _wakeup_channel->setReadCallback([this](){
                 uint64_t count;
@@ -41,21 +39,6 @@ EventLoop::EventLoop () :
 
 EventLoop::~EventLoop ()
 {
-    if (_wakeup_channel) {
-        delete _wakeup_channel;
-        _wakeup_channel = nullptr;
-    }
-
-    if (_timer_queue) {
-        delete _timer_queue;
-        _timer_queue = nullptr;
-    }
-
-    if (_poller) {
-        delete _poller;
-        _poller = nullptr;
-    }
-
     assert(!_is_running.load());
     t_loopInThisThread = nullptr;
 }

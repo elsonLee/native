@@ -4,6 +4,7 @@
 #include "Channel.h"
 
 #include <cassert>
+#include <memory>
 #include <iostream>
 #include <thread>
 #include <functional>
@@ -52,11 +53,11 @@ class EventLoop
         std::atomic<bool>                   _is_running;
         std::atomic<bool>                   _quit;
         std::thread::id                     _thread_id;
-        Poller*                             _poller;
-        TimerQueue*                         _timer_queue;
+        std::unique_ptr<Poller>             _poller;
+        std::unique_ptr<TimerQueue>         _timer_queue;
 
         int                                 _wakeup_fd;
-        Channel*                            _wakeup_channel;
+        std::unique_ptr<Channel>            _wakeup_channel;
 
         std::mutex                          _func_queue_mtx;
         std::vector<std::function<void()>>  _func_queue;
