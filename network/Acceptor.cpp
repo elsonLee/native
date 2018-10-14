@@ -7,7 +7,7 @@
 Acceptor::Acceptor (EventLoop* loop, const InetAddress& listen_addr) :
     _loop(loop),
     _accept_socket(sockops::createNonblockingSocket()),
-    _accept_channel(_accept_socket.fd(), loop),
+    _accept_channel("accept_fd", _accept_socket.fd(), loop),
     _listening(false),
     _idle_fd(::open("/dev/null", O_RDONLY | O_CLOEXEC)),
     _listen_addr(listen_addr)

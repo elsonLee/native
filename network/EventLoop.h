@@ -1,5 +1,4 @@
-#ifndef EVENT_LOOP_H
-#define EVENT_LOOP_H
+#pragma once
 
 #include "Timestamp.h"
 #include "Channel.h"
@@ -62,5 +61,3 @@ class EventLoop
         std::mutex                          _func_queue_mtx;
         std::vector<std::function<void()>>  _func_queue;
 };
-
-#endif //EVENT_LOOP_H

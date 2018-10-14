@@ -1,5 +1,4 @@
-#ifndef INET_ADDRESS_H
-#define INET_ADDRESS_H
+#pragma once
 
 #include <string>
 #include "Common.h"
@@ -28,5 +27,3 @@
     private:
         struct sockaddr_in _addr;
 };
-
-#endif

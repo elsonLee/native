@@ -1,5 +1,4 @@
-#ifndef SOCKET_OPS_H
-#define SOCKET_OPS_H
+#pragma once
 
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -22,5 +21,3 @@ namespace sockops
 
     int accept (int sockfd, struct sockaddr_in* addr);
 }
-
-#endif

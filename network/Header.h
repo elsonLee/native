@@ -1,5 +1,4 @@
-#ifndef HEADER_H
-#define HEADER_H
+#pragma once
 
 #include "Common.h"
 #include "Buffer.h"
@@ -16,5 +15,3 @@
 #include "TimerQueue.h"
 #include "Timestamp.h"
 #include "Utility.h"
-
-#endif // HEADER_H

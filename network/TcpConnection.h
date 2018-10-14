@@ -1,5 +1,4 @@
-#ifndef TCP_CONNECTION_H
-#define TCP_CONNECTION_H
+#pragma once
 
 #include "InetAddress.h"
 #include "Buffer.h"
@@ -70,5 +69,3 @@ class TcpConnection
         Buffer                  _input_buffer;
         Buffer                  _output_buffer;
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef SOCKET_H
-#define SOCKET_H
+#pragma once
 
 class InetAddress;
 
@@ -28,5 +27,3 @@ class Socket
         const int _sockfd;
 
 };
-
-#endif

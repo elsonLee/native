@@ -1,5 +1,4 @@
-#ifndef POLLER_H
-#define POLLER_H
+#pragma once
 
 #include <vector>
 #include <unordered_map>
@@ -27,5 +26,3 @@ class Poller
         int _fd;
         std::unordered_map<int, Channel*> _channel_map;
 };
-
-#endif // POLLER_H

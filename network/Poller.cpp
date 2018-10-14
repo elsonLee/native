@@ -42,9 +42,9 @@ Poller::registerChannel (const Channel* ch)
     int status = epoll_ctl(_fd, EPOLL_CTL_ADD, ch->fd(), &ev);
     if (!status) {
         ret = true;
-        std::cerr << "[Poller] registerChannel succ: " << ch->fd() << std::endl;
+        std::cerr << "[Poller] registerChannel succ: " << ch->name() << std::endl;
     } else {
-        std::cerr << "[Poller] registerChannel failed" << std::endl;
+        std::cerr << "[Poller] registerChannel failed: " << ch->name() << std::endl;
     }
 
     return ret;
@@ -88,9 +88,10 @@ Poller::unregisterChannel (const Channel* ch)
     int status = epoll_ctl(_fd, EPOLL_CTL_DEL, ch->fd(), &ev);
     if (!status) {
         ret = true;
-        std::cout << "[Poller] unregisterChannel succ: " << ch->fd() << std::endl;
+        std::cout << "[Poller] unregisterChannel succ: " << ch->name() << std::endl;
     } else {
-        std::cerr << "[Poller] unregisterChannel failed" << std::endl;
+        std::cerr << "[Poller] unregisterChannel failed: " << ch->name() <<
+            " : " << strerror(errno) << std::endl;
     }
 
     return ret;

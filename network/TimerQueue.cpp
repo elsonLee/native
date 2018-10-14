@@ -61,7 +61,7 @@ resetTimerFd (int timerFd, Timestamp expiration)
 TimerQueue::TimerQueue (EventLoop* loop) :
     _loop(loop),
     _fd(createTimerFd()),
-    _timersChannel(_fd, loop),
+    _timersChannel("timerqueue", _fd.fd(), loop),
     _timers()
 {
     _timersChannel.setReadCallback([&](){ this->handleRead(); });
@@ -71,7 +71,6 @@ TimerQueue::TimerQueue (EventLoop* loop) :
 TimerQueue::~TimerQueue ()
 {
     _timersChannel.disableAllEvent();
-    ::close(_fd);
 }
 
 void
@@ -95,7 +94,7 @@ TimerQueue::getExpired (Timestamp now)
 void
 TimerQueue::handleRead ()
 {
-    readTimerFd(_fd);
+    readTimerFd(_fd.fd());
     std::vector<std::pair<Timestamp, Timer*>> expired = getExpired(Clock::now());
 
     for (auto p : expired) {
@@ -135,6 +134,6 @@ TimerQueue::addTimerInLoop (Timer* timer)
     bool earliestChanged = insert(timer);
     //std::cout << "earliestChanged: " << earliestChanged << std::endl;
     if (earliestChanged) {
-        resetTimerFd(_fd, timer->expiration());
+        resetTimerFd(_fd.fd(), timer->expiration());
     }
 }

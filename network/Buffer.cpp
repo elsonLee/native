@@ -44,7 +44,6 @@ Buffer::append (const void* data, int size)
     int writeable = _buf.size() - _writePos;
     if (size <= writeable) {
         ::memcpy(&_buf[_writePos], data, size);
-        //printf("_writePos: %d, data: %s\n", _writePos, data);
         _writePos += size;
         return size;
     } else {

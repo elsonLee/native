@@ -12,7 +12,7 @@ TcpConnection::TcpConnection (EventLoop* loop, std::string name, int sockfd,
     _event_loop(loop),
     _name(name),
     _socket(Socket(sockfd)),
-    _channel(new Channel(sockfd, loop)),
+    _channel(new Channel("sockfd", sockfd, loop)),
     _local_addr(local_addr),
     _peer_addr(peer_addr),
     _state(State::kConnecting)

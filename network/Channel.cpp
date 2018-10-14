@@ -4,23 +4,24 @@
 #include "Poller.h"
 #include "Channel.h"
 
-static constexpr int kNoneEvent = 0;
-static constexpr int kReadEvent = EPOLLIN | EPOLLPRI;
-static constexpr int kWriteEvent = EPOLLOUT;
+constexpr int kNoneEvent = 0;
+constexpr int kReadEvent = EPOLLIN | EPOLLPRI;
+constexpr int kWriteEvent = EPOLLOUT;
 
-Channel::Channel (int fd, EventLoop* event_loop) :
+Channel::Channel (const std::string& name, int fd, EventLoop* event_loop) :
+    _name(name),
     _fd(fd),
     _event_loop(event_loop),
     _events(kNoneEvent), _revents(kNoneEvent)
 {
-    std::cout << "[Channel@" << this << "] create " << _fd << std::endl;
+    //std::cout << "[Channel: " << _name << "] create " << _fd << std::endl;
 }
 
 
 Channel::~Channel ()
 {
     if (_event_loop) {
-        std::cout << "[Channel@" << this << "] delete " << _fd << std::endl;
+        //std::cout << "[Channel: " << _name << "] delete " << _fd << std::endl;
         _event_loop->removeChannel(this);
     }
 }

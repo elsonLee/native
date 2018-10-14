@@ -1,5 +1,5 @@
 CPP = g++
-CFLAGS = -g -std=c++11 -Wall -I./
+CFLAGS = -g -std=c++17 -Wall -I./
 LDFLAG = 
 SOURCES = Acceptor.cpp \
           Buffer.cpp \

@@ -26,7 +26,7 @@ EventLoop::EventLoop () :
 
     _wakeup_fd = eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
     if (_wakeup_fd != -1) {
-        _wakeup_channel = new Channel(_wakeup_fd, this);
+        _wakeup_channel = ::new Channel("wakeup_fd", _wakeup_fd, this);
         _wakeup_channel->enableReadEvent();
         _wakeup_channel->setReadCallback([this](){
                 uint64_t count;
@@ -55,6 +55,9 @@ EventLoop::~EventLoop ()
         delete _poller;
         _poller = nullptr;
     }
+
+    assert(!_is_running.load());
+    t_loopInThisThread = nullptr;
 }
 
 

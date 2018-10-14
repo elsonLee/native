@@ -1,11 +1,11 @@
-#ifndef TIMERQUQUE_H
-#define TIMERQUQUE_H
+#pragma once
 
 #include <functional>
 #include <chrono>
 #include <utility>
 #include <set>
 
+#include "Utility.h"
 #include "Channel.h"
 #include "Timestamp.h"
 
@@ -31,10 +31,8 @@ class TimerQueue
         std::vector<std::pair<Timestamp, Timer*>> getExpired (Timestamp now);
 
     private:
-        EventLoop* _loop;
-        const int _fd;
-        Channel _timersChannel;
+        EventLoop*      _loop;
+        FileDescriptor  _fd;
+        Channel         _timersChannel;
         std::set<std::pair<Timestamp, Timer*>> _timers;
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef BUFFER_H
-#define BUFFER_H
+#pragma once
 
 #include <vector>
 
@@ -22,5 +21,3 @@ class Buffer
         int                 _readPos;
         int                 _writePos;
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef COMMON_H
-#define COMMON_H
+#pragma once
 
 #include <unistd.h>
 #include <netinet/in.h>
@@ -14,5 +13,3 @@
 
 #include <memory>
 #include <iostream>
-
-#endif

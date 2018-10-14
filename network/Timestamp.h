@@ -1,5 +1,4 @@
-#ifndef TIMESTAME_H
-#define TIMESTAME_H
+#pragma once
 
 #include <iomanip>
 #include <ctime>
@@ -9,5 +8,3 @@ using Clock = std::chrono::high_resolution_clock;
 using Timestamp = Clock::time_point;
 using Duration = Clock::duration;
 using MicroSeconds = std::chrono::microseconds;
-
-#endif

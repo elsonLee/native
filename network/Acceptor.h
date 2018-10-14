@@ -1,5 +1,4 @@
-#ifndef ACCEPTOR_H
-#define ACCEPTOR_H
+#pragma once
 
 #include "EventLoop.h"
 #include "InetAddress.h"
@@ -33,6 +32,3 @@ class Acceptor
         int                 _idle_fd;
         InetAddress         _listen_addr;
 };
-
-
-#endif
