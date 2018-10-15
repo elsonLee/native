@@ -30,6 +30,8 @@ class EventLoop
 
         void assertInLoopThread ();
         bool isInLoopThread () const { return _thread_id == std::this_thread::get_id(); }
+
+        //! thread-safe
         void runInLoop (const std::function<void()>& cb);
         void queueInLoop (const std::function<void()>& cb);
 
@@ -39,6 +41,7 @@ class EventLoop
         bool isRunning () const { return _is_running.load(); }
         void quit ();
 
+        //! thread-safe
         void runAt (const Timestamp& time, const std::function<void()>& cb);
         void runAfter (int us, const std::function<void()>& cb);
         void runEvery (int intervalInMicroSeconds, const std::function<void()>& cb);
@@ -53,6 +56,7 @@ class EventLoop
         std::atomic<bool>                   _is_running;
         std::atomic<bool>                   _quit;
         std::thread::id                     _thread_id;
+        bool                                _handling_pending_callback;
         std::unique_ptr<Poller>             _poller;
         std::unique_ptr<TimerQueue>         _timer_queue;
 

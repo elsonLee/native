@@ -13,6 +13,7 @@ EventLoop::EventLoop () :
     _is_running(false),
     _quit(false),
     _thread_id(std::this_thread::get_id()),
+    _handling_pending_callback(false),
     _poller(std::make_unique<Poller>()),
     _timer_queue(std::make_unique<TimerQueue>(this))
 {
@@ -84,8 +85,7 @@ EventLoop::runInLoop (const std::function<void()>& cb)
     if (isInLoopThread()) {
         cb();
     } else {
-        pushCallback(cb);
-        wakeup();
+        queueInLoop(cb);
     }
 }
 
@@ -94,7 +94,13 @@ void
 EventLoop::queueInLoop (const std::function<void()>& cb)
 {
     pushCallback(cb);
-    wakeup();
+
+    //! NOTE: if called by event handler in user code, no need
+    //  to call wakeup, because handlePendingCallback will be
+    //  called later
+    if (!isInLoopThread() || _handling_pending_callback) {
+        wakeup();
+    }
 }
 
 
