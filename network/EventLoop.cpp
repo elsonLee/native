@@ -116,13 +116,17 @@ void
 EventLoop::handlePendingCallback ()
 {
     // NOTE: minimum critical region
-    std::lock_guard<std::mutex> lk(_func_queue_mtx);
-    std::vector<std::function<void()>> cbList;
-    cbList.swap(_func_queue);
+    std::vector<std::function<void()>> cb_list;
+    {
+        std::lock_guard<std::mutex> lk(_func_queue_mtx);
+        cb_list.swap(_func_queue);
+    }
 
-    for (auto&& cb : cbList) {
+    _handling_pending_callback = true;
+    for (auto&& cb : cb_list) {
         cb();
     }
+    _handling_pending_callback = false;
 }
 
 void
