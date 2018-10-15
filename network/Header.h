@@ -5,6 +5,7 @@
 #include "Acceptor.h"
 #include "Channel.h"
 #include "EventLoop.h"
+#include "EventLoopThread.h"
 #include "InetAddress.h"
 #include "Poller.h"
 #include "Socket.h"
