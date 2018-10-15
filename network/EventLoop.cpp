@@ -26,11 +26,12 @@ EventLoop::EventLoop () :
     if (_wakeup_fd != -1) {
         _wakeup_channel = std::make_unique<Channel>("wakeup_fd", _wakeup_fd, this);
         _wakeup_channel->enableReadEvent();
-        _wakeup_channel->setReadCallback([this](){
-                uint64_t count;
-                ::read(_wakeup_fd, &count, sizeof(count));
-                //this->handlePendingCallback();    // why?
-        });
+        _wakeup_channel->setReadCallback(
+                [this]{
+                        uint64_t count;
+                        ::read(_wakeup_fd, &count, sizeof(count));
+                        //this->handlePendingCallback();    // why?
+                      });
     } else {
         std::cerr << "create eventfd failed" << std::endl;
     }
@@ -48,7 +49,12 @@ void
 EventLoop::quit ()
 {
     _quit.store(true);
-    if (!isInLoopThread()) {    // why?
+    //! NOTE:
+    // 1. In io thread, this must be called in event handler,
+    // event loop will quit at next quit check. wakeup event wont work
+    // 2. In other thread, if io thread is running between quit check 
+    // and poll, wakeup event will be catched in pool
+    if (!isInLoopThread()) {
         wakeup();
     }
 }
@@ -78,7 +84,6 @@ EventLoop::runInLoop (const std::function<void()>& cb)
     if (isInLoopThread()) {
         cb();
     } else {
-        //std::cout << "not in thread!" << std::endl;
         pushCallback(cb);
         wakeup();
     }
