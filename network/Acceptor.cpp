@@ -14,10 +14,7 @@ Acceptor::Acceptor (EventLoop* loop, const InetAddress& listen_addr) :
 {
     _accept_socket.setReuseAddr(true);
     _accept_socket.bindAddress(listen_addr);
-    _accept_channel.setReadCallback(
-            std::function<void()>(
-                [this]() { handleRead(); }
-            ));
+    _accept_channel.setReadCallback([this] { handleRead(); });
 }
 
 Acceptor::~Acceptor ()
@@ -54,8 +51,6 @@ Acceptor::handleRead ()
     }
     else
     {
-        std::cerr << "in Acceptor::handleRead" << std::endl;
+        std::cerr << "error in Acceptor::handleRead" << std::endl;
     }
 }
-
-

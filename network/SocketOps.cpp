@@ -44,8 +44,19 @@ void
 listen (int sockfd)
 {
     int ret = ::listen(sockfd, SOMAXCONN);
-    if (ret < 0) {
-        std::cerr << "socket listen failed" << std::endl;
+    if (ret == -1) {
+        switch (errno) {
+            case EADDRINUSE:
+                std::cout << "socket is already listening on the same port" << std::endl;
+                break;
+            case EBADF:
+            case ENOTSOCK:
+            case EOPNOTSUPP:
+                std::cout << "::listen: " << strerror(errno) << std::endl;
+                break;
+            default:
+                break;
+        }
     }
 }
 
@@ -53,12 +64,14 @@ int
 accept (int sockfd, struct sockaddr_in* addr)
 {
     socklen_t addrlen = static_cast<socklen_t>(sizeof(*addr));
+    //! NOTE:
+    //  return NON-BLOCK socket_fd directly, or use fcntl
     int connfd = ::accept4(sockfd, static_cast<struct sockaddr*>((void*)addr),
                            &addrlen , SOCK_NONBLOCK | SOCK_CLOEXEC);
     if (connfd < 0)
     {
         std::cerr << "socket accept failed" << std::endl;
-
+        // TODO: error handling
     }
     return connfd;
 }

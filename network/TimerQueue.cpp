@@ -20,12 +20,12 @@ createTimerFd ()
     return fd;
 }
 
+//! read fd for level trigger completion
 static void
 readTimerFd (int fd)
 {
     uint64_t count;
     ::read(fd, &count, sizeof(count));
-    //std::cout << "readTimerFd " << count << std::endl;
 }
 
 struct timespec
@@ -64,7 +64,7 @@ TimerQueue::TimerQueue (EventLoop* loop) :
     _timersChannel("timerqueue", _fd.fd(), loop),
     _timers()
 {
-    _timersChannel.setReadCallback([&](){ this->handleRead(); });
+    _timersChannel.setReadCallback([this]{ handleRead(); });
     _timersChannel.enableReadEvent();
 }
 
@@ -76,9 +76,8 @@ TimerQueue::~TimerQueue ()
 void
 TimerQueue::addTimer (const std::function<void()>& cb, Timestamp expiration, MicroSeconds interval)
 {
-    //std::cout << "add timer: " << interval << std::endl;
     Timer* timer = new Timer(cb, expiration, interval);
-    _loop->runInLoop([=](){ this->addTimerInLoop(timer); });
+    _loop->runInLoop([this, timer]{ addTimerInLoop(timer); });
 }
 
 std::vector<std::pair<Timestamp, Timer*>>
@@ -132,7 +131,6 @@ void
 TimerQueue::addTimerInLoop (Timer* timer)
 {
     bool earliestChanged = insert(timer);
-    //std::cout << "earliestChanged: " << earliestChanged << std::endl;
     if (earliestChanged) {
         resetTimerFd(_fd.fd(), timer->expiration());
     }
