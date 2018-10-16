@@ -18,7 +18,7 @@ class TcpServer
         using MessageCallback = std::function<void(TcpConnection&, Buffer&)>;
 
         explicit TcpServer (const std::string& name, EventLoop* loop, const InetAddress& listen_addr);
-        ~TcpServer ();
+        ~TcpServer () = default;
 
         void start ();
 
@@ -31,13 +31,13 @@ class TcpServer
         void removeConnection (TcpConnection* conn);
 
     private:
-        EventLoop*              _loop;
-        const std::string       _name;
-        Acceptor*               _acceptor;
-        ConnectionCallback      _conn_cb{nullptr};
-        DisconnectionCallback   _disconn_cb{nullptr};
-        MessageCallback         _msg_cb{nullptr};
-        bool                    _started;
-        int                     _next_conn_id;
+        EventLoop*                  _loop;
+        const std::string           _name;
+        std::unique_ptr<Acceptor>   _acceptor;
+        ConnectionCallback          _conn_cb{nullptr};
+        DisconnectionCallback       _disconn_cb{nullptr};
+        MessageCallback             _msg_cb{nullptr};
+        bool                        _started;
+        int                         _next_conn_id;
         std::map<std::string, std::shared_ptr<TcpConnection>> _connections;
 };

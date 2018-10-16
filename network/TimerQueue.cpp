@@ -61,8 +61,7 @@ resetTimerFd (int timerFd, Timestamp expiration)
 TimerQueue::TimerQueue (EventLoop* loop) :
     _loop(loop),
     _fd(createTimerFd()),
-    _timersChannel("timerqueue", _fd.fd(), loop),
-    _timers()
+    _timersChannel("timerqueue", _fd.fd(), loop)
 {
     _timersChannel.setReadCallback([this]{ handleRead(); });
     _timersChannel.enableReadEvent();
