@@ -43,8 +43,19 @@ bind (int sockfd, const struct sockaddr* addr)
 void
 listen (int sockfd)
 {
+    //! NOTE:
+    //  backlog behaviour on TCP is changed with Linux 2.2,
+    //  it specifies the queue length for completely established
+    //  sockets wating to the accepted, instead of number of incomplete
+    //  connection requests, the max length of queue for incomplete
+    //  sockets can be setting using:
+    //  /proc/sys/net/ipv4/tcp_max_syn_backlog
+    //
+    //  if the backlog argument is greater than the value
+    //  in /proc/sys/net/core/somaxconn, it is silently
+    //  truncated to that value, default is 128
     int ret = ::listen(sockfd, SOMAXCONN);
-    if (ret == -1) {
+    if (ret < 0) {
         switch (errno) {
             case EADDRINUSE:
                 std::cout << "socket is already listening on the same port" << std::endl;
@@ -52,9 +63,9 @@ listen (int sockfd)
             case EBADF:
             case ENOTSOCK:
             case EOPNOTSUPP:
-                std::cout << "::listen: " << strerror(errno) << std::endl;
-                break;
+                std::cerr << "::listen: " << strerror(errno) << std::endl;
             default:
+                //exit(-1);
                 break;
         }
     }
@@ -70,8 +81,30 @@ accept (int sockfd, struct sockaddr_in* addr)
                            &addrlen , SOCK_NONBLOCK | SOCK_CLOEXEC);
     if (connfd < 0)
     {
-        std::cerr << "socket accept failed" << std::endl;
-        // TODO: error handling
+        switch (errno) {
+            case EAGAIN:
+            case EWOULDBLOCK:
+            case EINTR:
+            case EMFILE:
+            case EBADF:
+            case ECONNABORTED:
+            case EFAULT:
+            case EINVAL:
+            case ENOTSOCK:
+            case EOPNOTSUPP:
+            case EPROTO:
+            case EPERM:
+                // ignore
+                std::cout << "::accept: " << strerror(errno) << std::endl;
+                break;
+            case ENFILE:
+            case ENOBUFS:
+            case ENOMEM:
+            default:
+                std::cerr << "::accept: " << strerror(errno) << std::endl;
+                exit(-1);
+                break;
+        }
     }
     return connfd;
 }
