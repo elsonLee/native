@@ -83,7 +83,7 @@ accept (int sockfd, struct sockaddr_in* addr)
     {
         switch (errno) {
             case EAGAIN:
-            case EWOULDBLOCK:
+            // case EWOULDBLOCK: dup with EAGAIN
             case EINTR:
             case EMFILE:
             case EBADF:
