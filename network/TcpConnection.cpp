@@ -52,7 +52,6 @@ TcpConnection::handleRead ()
 void
 TcpConnection::handleWrite ()
 {
-    std::cout << "handleWrite" << std::endl;
     _loop->assertInLoopThread();
     if (_channel.isWriteEventOn()) {
         ssize_t n = ::write(_channel.fd(), _output_buffer.peek(),
