@@ -19,6 +19,7 @@ EventLoopThread::start ()
                 EventLoop loop;
                 _loop.store(&loop);
                 cv.notify_all();    //! status changed
+                loop.run();
             }
             ).detach();
 

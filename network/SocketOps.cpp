@@ -132,6 +132,15 @@ close (int sockfd)
     }
 }
 
-
+int
+getSocketError (int sockfd)
+{
+    int err = 0;
+    socklen_t len = sizeof(err);
+    if (getsockopt(sockfd, SOL_SOCKET, SO_ERROR,  &err, &len)) {
+        std::cerr << "getSocketError error" << std::endl;
+    }
+    return err;
+}
 
 }

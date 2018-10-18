@@ -11,6 +11,7 @@
 #include "Socket.h"
 #include "SocketOps.h"
 #include "TcpConnection.h"
+#include "Connector.h"
 #include "TcpServer.h"
 #include "Timer.h"
 #include "TimerQueue.h"

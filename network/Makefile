@@ -11,6 +11,7 @@ SOURCES = Acceptor.cpp \
 	  Socket.cpp \
 	  SocketOps.cpp \
 	  TcpConnection.cpp \
+	  Connector.cpp \
 	  TcpServer.cpp \
 	  Timer.cpp \
 	  TimerQueue.cpp

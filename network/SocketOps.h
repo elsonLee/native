@@ -20,4 +20,6 @@ namespace sockops
     void listen (int sockfd);
 
     int accept (int sockfd, struct sockaddr_in* addr);
+
+    int getSocketError (int sockfd);
 }
