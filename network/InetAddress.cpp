@@ -1,6 +1,7 @@
 #include "Common.h"
 
 #include <iostream>
+#include <arpa/inet.h>
 
 #include "InetAddress.h"
 
@@ -23,4 +24,15 @@ InetAddress::InetAddress (uint16_t port, bool loopbackOnly)
     in_addr_t ip = loopbackOnly? INADDR_LOOPBACK : INADDR_ANY;
     _addr.sin_addr.s_addr = htonl(ip);
     _addr.sin_port = htons(port);
+}
+
+std::string
+InetAddress::toIpPort (void) const
+{
+    char buf[INET_ADDRSTRLEN];
+    if (inet_ntop(AF_INET, &_addr.sin_addr, buf, sizeof(buf))) {
+        return std::string(buf);
+    } else {
+        return "toIpPortError";
+    }
 }

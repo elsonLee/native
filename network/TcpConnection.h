@@ -2,6 +2,7 @@
 
 #include "InetAddress.h"
 #include "Buffer.h"
+#include "Socket.h"
 
 #include <string>
 #include <functional>
@@ -19,7 +20,7 @@ class TcpConnection
         using MessageCallback = std::function<void(TcpConnection&, Buffer&)>;
 
         TcpConnection (EventLoop* loop, const std::string& name, int sockfd,
-                       const InetAddress localAddr, const InetAddress peerAddr);
+                       const InetAddress local_addr, const InetAddress peer_addr);
 
         TcpConnection (const TcpConnection&) = delete;
         TcpConnection& operator= (const TcpConnection&) = delete;

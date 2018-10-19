@@ -19,6 +19,18 @@ getLocalAddr (int sockfd)
     return addr;
 }
 
+struct sockaddr_in
+getPeerAddr (int sockfd)
+{
+    struct sockaddr_in addr;
+    bzero(&addr, sizeof(addr));
+    socklen_t len = static_cast<socklen_t>(sizeof(addr));
+    if (::getpeername(sockfd, reinterpret_cast<struct sockaddr*>(&addr), &len) < 0) {
+        std::cerr << "getPeerAddr failed" << std::endl;
+    }
+    return addr;
+}
+
 int
 createNonblockingSocket ()
 {

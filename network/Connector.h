@@ -3,6 +3,7 @@
 #include <memory>
 #include <functional>
 
+#include "Channel.h"
 #include "InetAddress.h"
 
 class EventLoop;

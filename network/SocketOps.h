@@ -6,6 +6,7 @@
 namespace sockops
 {
     struct sockaddr_in getLocalAddr (int sockfd);
+    struct sockaddr_in getPeerAddr (int sockfd);
 
     int createNonblockingSocket ();
 

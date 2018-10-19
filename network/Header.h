@@ -13,6 +13,7 @@
 #include "TcpConnection.h"
 #include "Connector.h"
 #include "TcpServer.h"
+#include "TcpClient.h"
 #include "Timer.h"
 #include "TimerQueue.h"
 #include "Timestamp.h"
