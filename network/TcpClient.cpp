@@ -44,11 +44,10 @@ TcpClient::newConnection (int sockfd)
                                                        sockfd,
                                                        local_addr,
                                                        peer_addr);
-    shared_conn->setOnConnected(_conn_cb);
-    shared_conn->setOnDisconnected(nullptr);
-    shared_conn->setOnMessage(nullptr);
-
-    shared_conn->setOnClose([this, shared_conn](TcpConnection* conn){ removeConnection(shared_conn); });
+    shared_conn->setConnectCallback(_conn_cb);
+    shared_conn->setDisconnectCallback(nullptr);
+    shared_conn->setMessageCallback(nullptr);
+    shared_conn->setCloseCallback([this, shared_conn](std::shared_ptr<TcpConnection> connPtr){ removeConnection(shared_conn); });
 
     shared_conn->connectEstablished();
 }

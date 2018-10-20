@@ -151,7 +151,6 @@ Poller::poll (int timeout_in_mills, std::vector<Channel*>& triggered_channels)
             auto ch = iter->second;
             assert(ch);
             ch->setRevents(ev.events);
-            //std::cout << "[Poller] trigger " << fd << std::endl;
             triggered_channels.push_back(ch);
         }
     } else if (num_events == 0) {

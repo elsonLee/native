@@ -30,10 +30,11 @@ class Channel
 
         bool enableReadEvent ();
         bool disableReadEvent ();
+        bool isReadEventOn () const;
 
         bool enableWriteEvent ();
         bool disableWriteEvent ();
-        bool isWriteEventOn ();
+        bool isWriteEventOn () const;
 
         bool enableAllEvent ();
         bool disableAllEvent ();

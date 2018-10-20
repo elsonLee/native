@@ -17,7 +17,6 @@ Channel::Channel (const std::string& name, int fd, EventLoop* event_loop) :
     //std::cout << "[Channel: " << _name << "] create " << _fd << std::endl;
 }
 
-
 Channel::~Channel ()
 {
     if (_event_loop) {
@@ -25,7 +24,6 @@ Channel::~Channel ()
         _event_loop->removeChannel(this);
     }
 }
-
 
 bool
 Channel::enableReadEvent ()
@@ -35,7 +33,6 @@ Channel::enableReadEvent ()
     return update();
 }
 
-
 bool
 Channel::disableReadEvent ()
 {
@@ -44,6 +41,11 @@ Channel::disableReadEvent ()
     return update();
 }
 
+bool
+Channel::isReadEventOn () const
+{
+    return (_events & kReadEvent);
+}
 
 bool
 Channel::enableWriteEvent ()
@@ -53,7 +55,6 @@ Channel::enableWriteEvent ()
     return update();
 }
 
-
 bool
 Channel::disableWriteEvent ()
 {
@@ -62,9 +63,8 @@ Channel::disableWriteEvent ()
     return update();
 }
 
-
 bool
-Channel::isWriteEventOn ()
+Channel::isWriteEventOn () const
 {
     return (_events & kWriteEvent);
 }
@@ -76,7 +76,6 @@ Channel::enableAllEvent ()
     return update();
 }
 
-
 bool
 Channel::disableAllEvent ()
 {
@@ -84,26 +83,32 @@ Channel::disableAllEvent ()
     return update();
 }
 
-
 bool
 Channel::update ()
 {
     return _event_loop->updateChannel(this);
 }
 
-
 void
 Channel::handleEvent ()
 {
+    // TODO: ????
     if ((_revents & EPOLLHUP) && !(_revents & EPOLLIN)) {
         std::cout << "warning: EPOLLHUP" << std::endl;
         if (_close_cb) { _close_cb(); }
     }
 
+    // accept conn available -> EPOLLIN
+    // normal data available -> EPOLLIN
+    // urgent data available -> EPOLLPRI
+    // peer close -> EPOLLIN or EPOLLRDHUP
+    // NOTE: peer close may not trigger EPOLLRDHUP, so put EPOLLRDHUP
+    // here, handle with read, if read return 0, it means peer closed
     if (_revents & (EPOLLIN | EPOLLPRI | EPOLLRDHUP)) {
         if (_read_cb) { _read_cb(); }
     }
 
+    // available for write -> EPOLLOUT
     if (_revents & EPOLLOUT) {
         if (_write_cb) { _write_cb(); }
     }

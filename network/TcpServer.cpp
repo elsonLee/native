@@ -9,10 +9,14 @@
 #include "TcpServer.h"
 
 TcpServer::TcpServer (const std::string& name, EventLoop* loop, const InetAddress& listen_addr) :
-    _loop(loop),
     _name(name),
-    _acceptor(std::make_unique<Acceptor>(loop, listen_addr)),
-    _next_conn_id(0)
+    _loop(loop),
+    _acceptor(_loop, listen_addr),
+    _started(false),
+    _next_conn_id(0),
+    _connect_cb(nullptr),
+    _disconnect_cb(nullptr),
+    _message_cb(nullptr)
 {
 
 }
@@ -21,18 +25,19 @@ TcpServer::TcpServer (const std::string& name, EventLoop* loop, const InetAddres
 void
 TcpServer::start ()
 {
-    _acceptor->setConnectionCallback(
+    _acceptor.setConnectionCallback(
             [this](int sockfd, const InetAddress& peer_addr)
                   {
-                    newConnection(sockfd, peer_addr);
+                     handleNewConnectionEvent(sockfd, peer_addr);
                   }
             );
-    _acceptor->listen();
+    _acceptor.listen();
 }
 
 
+//! NOTE: peer_fd will be closed after the connection dtor
 void
-TcpServer::newConnection (int sockfd, const InetAddress& peer_addr)
+TcpServer::handleNewConnectionEvent (int peer_fd, const InetAddress& peer_addr)
 {
     _loop->assertInLoopThread();
     char buf[32];
@@ -44,28 +49,28 @@ TcpServer::newConnection (int sockfd, const InetAddress& peer_addr)
               << " new connection [" << conn_name
               << "]" << std::endl;
 
-    InetAddress local_addr(sockops::getLocalAddr(sockfd));
-    auto conn = std::make_shared<TcpConnection>(_loop, conn_name, sockfd, local_addr, peer_addr);
+    InetAddress local_addr(sockops::getLocalAddr(peer_fd));
+    auto connPtr = std::make_shared<TcpConnection>(_loop, conn_name, peer_fd, local_addr, peer_addr);
 
-    conn->setOnConnected(_conn_cb);
-    conn->setOnDisconnected(_disconn_cb);
-    conn->setOnMessage(_msg_cb);
+    connPtr->setConnectCallback(_connect_cb);
+    connPtr->setDisconnectCallback(_disconnect_cb);
+    connPtr->setMessageCallback(_message_cb);
+    connPtr->setCloseCallback([this](const std::shared_ptr<TcpConnection>& connPtr) {
+                                       removeConnection(connPtr); 
+                                    });
 
-    conn->setOnClose([this](TcpConnection* c) { removeConnection(c); });  // remove TcpConnection
+    _connections[connPtr->name()] = connPtr;
 
-    _connections[conn->name()] = conn;
-
-    _loop->runInLoop([conn]{ conn->connectEstablished(); });
+    _loop->runInLoop([connPtr]{ connPtr->connectEstablished(); });
 }
 
 
 void
-TcpServer::removeConnection (TcpConnection* conn)
+TcpServer::removeConnection (const std::shared_ptr<TcpConnection>& connPtr)
 {
     // NOTE: cannot delete TcpConnection here, it will trigger destructor of Channel and current function is
-    // called by Channel, so deletion must be delayed
+    // called by Channel, so deletion must be delayed and run in loop
     //::delete conn;
-    auto shared_conn = _connections[conn->name()];
-    _loop->queueInLoop([shared_conn]{ shared_conn->disconnect(); /*::delete conn;*/ });
-    _connections.erase(conn->name());
+    _loop->queueInLoop([connPtr]{ connPtr->disconnect(); /*::delete conn delayed to loop*/ });
+    _connections.erase(connPtr->name());
 }

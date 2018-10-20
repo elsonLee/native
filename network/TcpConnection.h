@@ -11,13 +11,13 @@ class EventLoop;
 class Socket;
 class Channel;
 
-class TcpConnection
+class TcpConnection : public std::enable_shared_from_this<TcpConnection>
 {
     public:
-        using ConnectedCallback = std::function<void(const TcpConnection&)>;
-        using DisconnectedCallback = std::function<void(const TcpConnection&)>;
-        using CloseCallback = std::function<void(TcpConnection*)>;
-        using MessageCallback = std::function<void(TcpConnection&, Buffer&)>;
+        using ConnectCallback    = std::function<void(const std::shared_ptr<TcpConnection>&)>;
+        using DisconnectCallback = std::function<void(const std::shared_ptr<TcpConnection>&)>;
+        using CloseCallback      = std::function<void(const std::shared_ptr<TcpConnection>&)>;
+        using MessageCallback    = std::function<void(const std::shared_ptr<TcpConnection>&, Buffer&)>;
 
         TcpConnection (EventLoop* loop, const std::string& name, int sockfd,
                        const InetAddress local_addr, const InetAddress peer_addr);
@@ -29,10 +29,10 @@ class TcpConnection
 
         std::string name () const { return _name; }
 
-        void setOnConnected (const ConnectedCallback& cb) { _connected_cb = cb; }
-        void setOnDisconnected (const DisconnectedCallback& cb) { _disconnected_cb = cb; }
-        void setOnClose (const CloseCallback& cb) { _close_cb = cb; }
-        void setOnMessage (const MessageCallback& cb) { _message_cb = cb; }
+        void setConnectCallback (const ConnectCallback& cb) { _connect_cb = cb; }
+        void setDisconnectCallback (const DisconnectCallback& cb) { _disconnect_cb = cb; }
+        void setCloseCallback (const CloseCallback& cb) { _close_cb = cb; }
+        void setMessageCallback (const MessageCallback& cb) { _message_cb = cb; }
 
         void disconnect ();
 
@@ -46,10 +46,10 @@ class TcpConnection
         void sendInLoop (const std::string& message);
         void shutdownInLoop ();
 
-        void handleRead ();
-        void handleWrite ();
-        void handleClose ();
-        void handleError ();
+        void handleReadEvent ();
+        void handleWriteEvent ();
+        void handleCloseEvent ();
+        void handleErrorEvent ();
 
     private:
         enum class State {
@@ -69,8 +69,8 @@ class TcpConnection
         InetAddress             _peer_addr;
 
         State                   _state;
-        ConnectedCallback       _connected_cb;
-        DisconnectedCallback    _disconnected_cb;
+        ConnectCallback         _connect_cb;
+        DisconnectCallback      _disconnect_cb;
         CloseCallback           _close_cb;
         MessageCallback         _message_cb;
 

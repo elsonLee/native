@@ -11,15 +11,15 @@ TcpConnection::TcpConnection (EventLoop* loop, const std::string& name, int sock
                               const InetAddress local_addr, const InetAddress peer_addr) :
     _loop(loop),
     _name(name),
-    _socket(Socket(sockfd)),
-    _channel("tcp_conn", sockfd, loop),
+    _socket(Socket(sockfd)),    // sockfd will be closed in dtor
+    _channel("connection", sockfd, loop),
     _local_addr(local_addr),
     _peer_addr(peer_addr),
     _state(State::kConnecting)
 {
-    _channel.setReadCallback([this]{ handleRead(); });
-    _channel.setWriteCallback([this]{ handleWrite(); });
-    _channel.setCloseCallback([this]{ handleClose(); });
+    _channel.setReadCallback([this]{ handleReadEvent(); });
+    _channel.setWriteCallback([this]{ handleWriteEvent(); });
+    _channel.setCloseCallback([this]{ handleCloseEvent(); });
     std::cout << "[TcpConnection] create '" << _name << "'" << std::endl;
 }
 
@@ -32,16 +32,16 @@ TcpConnection::~TcpConnection ()
 
 
 void
-TcpConnection::handleRead ()
+TcpConnection::handleReadEvent ()
 {
     int error = 0;
     int n = _input_buffer.readFd(_channel.fd(), error);
     if (n > 0) {
         std::cout << "[TcpConnection] handleRead " << n << " Bytes" << std::endl;
-        _message_cb(*this, _input_buffer);
+        _message_cb(shared_from_this(), _input_buffer);
     } else if (n == 0) {    // received FIN
         std::cout << "[TcpConnection] Client half closed" << std::endl;
-        handleClose();
+        handleCloseEvent();
     } else {
         // TODO: error handling
         std::cerr << "TcpConnection::handleRead error: " << error << std::endl;
@@ -50,12 +50,12 @@ TcpConnection::handleRead ()
 
 
 void
-TcpConnection::handleWrite ()
+TcpConnection::handleWriteEvent ()
 {
     _loop->assertInLoopThread();
     if (_channel.isWriteEventOn()) {
         ssize_t n = ::write(_channel.fd(), _output_buffer.peek(),
-                _output_buffer.readableBytes());
+                            _output_buffer.readableBytes());
         if (n > 0) {
             _output_buffer.retrieve(nullptr, n);
             if (_output_buffer.readableBytes() == 0) {
@@ -67,12 +67,12 @@ TcpConnection::handleWrite ()
 
 
 void
-TcpConnection::handleClose ()
+TcpConnection::handleCloseEvent ()
 {
     _loop->assertInLoopThread();
     _channel.disableAllEvent();
     assert(_close_cb);
-    _close_cb(this);
+    _close_cb(shared_from_this());
 }
 
 
@@ -81,8 +81,8 @@ TcpConnection::disconnect ()
 {
     _channel.disableAllEvent();
     setState(State::kConnecting);
-    if (_disconnected_cb) {
-        _disconnected_cb(*this);
+    if (_disconnect_cb) {
+        _disconnect_cb(shared_from_this());
     }
 }
 
@@ -137,7 +137,7 @@ TcpConnection::connectEstablished ()
     setState(State::kConnected);
 
     _channel.enableReadEvent();
-    _connected_cb(*this);
+    _connect_cb(shared_from_this());
 }
 
 

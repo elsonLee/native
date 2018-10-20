@@ -2,6 +2,8 @@
 
 #include "Common.h"
 #include "Buffer.h"
+#include "Acceptor.h"
+#include "TcpConnection.h"
 
 #include <map>
 
@@ -13,31 +15,35 @@ class Acceptor;
 class TcpServer
 {
     public:
-        using ConnectionCallback = std::function<void(const TcpConnection&)>;
-        using DisconnectionCallback = std::function<void(const TcpConnection&)>;
-        using MessageCallback = std::function<void(TcpConnection&, Buffer&)>;
+        using ConnectCallback    = std::function<void(const std::shared_ptr<TcpConnection>&)>;
+        using DisconnectCallback = std::function<void(const std::shared_ptr<TcpConnection>&)>;
+        using MessageCallback    = std::function<void(const std::shared_ptr<TcpConnection>&, Buffer&)>;
 
-        explicit TcpServer (const std::string& name, EventLoop* loop, const InetAddress& listen_addr);
+        TcpServer (const std::string& name, EventLoop* loop, const InetAddress& listen_addr);
         ~TcpServer () = default;
 
         void start ();
 
-        void setConnectionCallback (const ConnectionCallback& cb) { _conn_cb = cb; }
-        void setDisconnectionCallback (const DisconnectionCallback& cb) { _disconn_cb = cb; }
-        void setMessageCallback (const MessageCallback& cb) { _msg_cb = cb; }
+        void setConnectCallback (const ConnectCallback& cb) { _connect_cb = cb; }
+        void setDisconnectCallback (const DisconnectCallback& cb) { _disconnect_cb = cb; }
+        void setMessageCallback (const MessageCallback& cb) { _message_cb = cb; }
 
     private:
-        void newConnection (int sockfd, const InetAddress& peerAddr);
-        void removeConnection (TcpConnection* conn);
+        void handleNewConnectionEvent (int peer_fd, const InetAddress& peer_addr);
+        void removeConnection (const std::shared_ptr<TcpConnection>& conn);
 
     private:
-        EventLoop*                  _loop;
         const std::string           _name;
-        std::unique_ptr<Acceptor>   _acceptor;
-        ConnectionCallback          _conn_cb{nullptr};
-        DisconnectionCallback       _disconn_cb{nullptr};
-        MessageCallback             _msg_cb{nullptr};
+        EventLoop*                  _loop;
+        Acceptor                    _acceptor;
         bool                        _started;
         int                         _next_conn_id;
+
+        ConnectCallback             _connect_cb;
+        DisconnectCallback          _disconnect_cb;
+        MessageCallback             _message_cb;
+
+        // TcpConnection is responsible for data reading/writing, its life time
+        // depends on the real connection
         std::map<std::string, std::shared_ptr<TcpConnection>> _connections;
 };

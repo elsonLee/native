@@ -6,22 +6,20 @@
 
 Acceptor::Acceptor (EventLoop* loop, const InetAddress& listen_addr) :
     _loop(loop),
-    _accept_socket(sockops::createNonblockingSocket()),
-    _accept_channel("accept_fd", _accept_socket.fd(), loop),
-    _listening(false),
-    _idle_fd(::open("/dev/null", O_RDONLY | O_CLOEXEC)),
-    _listen_addr(listen_addr)
+    _listen_addr(listen_addr),
+    _socket(sockops::createNonblockingSocket()),  // _socket.fd will be closed in ~Socket()
+    _channel("accept_fd", _socket.fd(), _loop),
+    _listening(false)
 {
-    _accept_socket.setReuseAddr(true);
-    _accept_socket.bindAddress(listen_addr);
-    _accept_channel.setReadCallback([this] { handleRead(); });
+    _channel.setReadCallback([this] { handleAcceptEvent(); });
+    _socket.setReuseAddr(true);
+    _socket.bindAddress(listen_addr);
 }
 
 Acceptor::~Acceptor ()
 {
-    _accept_channel.disableAllEvent();
-    //_acceptChannel.remove();
-    ::close(_idle_fd);
+    _channel.disableAllEvent();
+    // _channel will be removed automatically in ~Channel()
 }
 
 void
@@ -30,23 +28,23 @@ Acceptor::listen ()
     _loop->assertInLoopThread();
     _listening = true;
     std::cout << "[Acceptor] listen @" << _listen_addr.toPort() << " ..." << std::endl;
-    _accept_socket.listen();
-    _accept_channel.enableReadEvent();
+    _socket.listen();
+    _channel.enableReadEvent();
 }
 
 void
-Acceptor::handleRead ()
+Acceptor::handleAcceptEvent ()
 {
-    std::cout << "[Acceptor] handleRead" << std::endl;
+    std::cout << "[Acceptor] handleAcceptEvent" << std::endl;
     _loop->assertInLoopThread();
-    InetAddress addr;
-    int connfd = _accept_socket.accept(&addr);
-    if (connfd >= 0)
+    InetAddress peer_addr;
+    int peer_fd = _socket.accept(&peer_addr);
+    if (peer_fd >= 0)
     {
         if (_connection_cb) {
-            _connection_cb(connfd, addr);
+            _connection_cb(peer_fd, peer_addr);
         } else {
-            sockops::close(connfd);
+            sockops::close(peer_fd);
         }
     }
     else

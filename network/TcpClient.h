@@ -12,9 +12,9 @@ class TcpConnection;
 class TcpClient
 {
     public:
-        using ConnectionCallback = std::function<void(const TcpConnection&)>;
-        using CloseCallback = std::function<void(const TcpConnection&)>;
-        using WriteCompleteCallback = std::function<void(const TcpConnection&)>;
+        using ConnectCallback       = std::function<void(const std::shared_ptr<TcpConnection>&)>;
+        using CloseCallback         = std::function<void(const std::shared_ptr<TcpConnection>&)>;
+        using WriteCompleteCallback = std::function<void(const std::shared_ptr<TcpConnection>&)>;
 
         TcpClient (const std::string& name,
                    EventLoop* loop,
@@ -22,7 +22,7 @@ class TcpClient
 
         ~TcpClient () = default;
 
-        void setConnectionCallback (const ConnectionCallback& cb) {
+        void setConnectCallback (const ConnectCallback& cb) {
             _conn_cb = cb;
         }
 
@@ -46,7 +46,7 @@ class TcpClient
         std::unique_ptr<Connector>  _connector;
         int                         _next_conn_id;
 
-        ConnectionCallback          _conn_cb;
+        ConnectCallback             _conn_cb;
         CloseCallback               _close_cb;
         WriteCompleteCallback       _write_complete_cb;
 

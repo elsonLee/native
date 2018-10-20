@@ -17,6 +17,13 @@ class Channel;
 class Poller;
 class TimerQueue;
 
+//! NOTE:
+//  EventLoop corresponds to the Initiation Dispatcher in Reactor model,
+//  with updateChannel & removeChannel APIs to register/unregister the
+//  event handlers
+//  Poller is Synchronous Event Demultiplexer
+//  Channel is Event Handler
+
 class EventLoop
 {
     public:

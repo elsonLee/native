@@ -12,10 +12,9 @@ class Poller
         Poller ();
         ~Poller ();
 
-        bool updateChannel (const Channel* ch);
-
         void poll (int timeout_in_mills, std::vector<Channel*>& triggered_channels);
 
+        bool updateChannel (const Channel* ch);
         bool removeChannel (const Channel* ch);
 
     private:

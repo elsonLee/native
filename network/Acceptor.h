@@ -12,23 +12,26 @@ class Acceptor
 
         Acceptor (EventLoop* loop, const InetAddress& listen_addr);
         Acceptor (const Acceptor&) = delete;
+        Acceptor& operator= (const Acceptor&) = delete;
 
         ~Acceptor ();
 
         void listen ();
 
+        //! FIXME: sockfd must be closed in callback now
         void setConnectionCallback (const ConnectionCallback& cb) {
             _connection_cb = cb;
         }
 
     private:
-        void handleRead();
+        void handleAcceptEvent();
 
+    private:
         EventLoop*          _loop;
-        Socket              _accept_socket;
-        Channel             _accept_channel;
-        ConnectionCallback  _connection_cb;
-        bool                _listening;
-        int                 _idle_fd;
         InetAddress         _listen_addr;
+        Socket              _socket;        // FIXME
+        Channel             _channel;
+        bool                _listening;
+
+        ConnectionCallback  _connection_cb;
 };
