@@ -13,7 +13,6 @@ TcpClient::TcpClient (const std::string& name,
       _connector(loop, server_addr),
       _next_conn_id(0),
       _connect_cb(nullptr),
-      _close_cb(nullptr),
       _write_complete_cb(nullptr),
       _message_cb(nullptr)
 {
@@ -44,7 +43,7 @@ TcpClient::handleConnectEvent (int sockfd)
     auto connPtr = std::make_shared<TcpConnection>(_loop, conn_name, sockfd,
                                                    local_addr, peer_addr);
     connPtr->setConnectCallback(_connect_cb);
-    connPtr->setDisconnectCallback(nullptr);
+    connPtr->setDisconnectCallback(_disconnect_cb);
     connPtr->setMessageCallback(_message_cb);
     connPtr->setCloseCallback(
             [this](const std::shared_ptr<TcpConnection>& conn){

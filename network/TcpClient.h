@@ -15,7 +15,7 @@ class TcpClient
 {
     public:
         using ConnectCallback       = std::function<void(const std::shared_ptr<TcpConnection>&)>;
-        using CloseCallback         = std::function<void(const std::shared_ptr<TcpConnection>&)>;
+        using DisconnectCallback    = std::function<void(const std::shared_ptr<TcpConnection>&)>;
         using WriteCompleteCallback = std::function<void(const std::shared_ptr<TcpConnection>&)>;
         using MessageCallback       = std::function<void(const std::shared_ptr<TcpConnection>&, Buffer&)>;
 
@@ -29,8 +29,8 @@ class TcpClient
             _connect_cb = cb;
         }
 
-        void setCloseCallback (const CloseCallback& cb) {
-            _close_cb = cb;
+        void setDisonnectCallback (const DisconnectCallback& cb) {
+            _disconnect_cb = cb;
         }
 
         void setWriteCompleteCallback (const WriteCompleteCallback& cb) {
@@ -55,7 +55,7 @@ class TcpClient
         int                         _next_conn_id;
 
         ConnectCallback             _connect_cb;
-        CloseCallback               _close_cb;
+        DisconnectCallback          _disconnect_cb;
         WriteCompleteCallback       _write_complete_cb;
         MessageCallback             _message_cb;
 };
