@@ -12,9 +12,8 @@ Connector::Connector (EventLoop* loop, const InetAddress& server_addr) :
     _loop(loop),
     _server_addr(server_addr),
     _channel(nullptr),
-    _newConnectionCallback(nullptr)
+    _connectCallback(nullptr)
 {
-
 
 }
 
@@ -36,6 +35,7 @@ Connector::startInLoop ()
 void
 Connector::connect ()
 {
+    _loop->assertInLoopThread();
     int sockfd = sockops::createNonblockingSocket();
     int ret = sockops::connect(sockfd, _server_addr.getSockAddr());
     int saved_errno = (ret == 0)? 0 : errno;
@@ -77,15 +77,17 @@ Connector::connecting (int sockfd)
     assert(!_channel);
 
     _channel.reset(new Channel("connector", sockfd, _loop));
-    _channel->setWriteCallback([this]{ handleWrite(); });
+    _channel->setWriteCallback([this]{ handleConnectingEvent(); });
 
     _channel->enableWriteEvent();
 }
 
 void
-Connector::handleWrite ()
+Connector::handleConnectingEvent ()
 {
     assert(_state == State::kConnecting);
+    _loop->assertInLoopThread();
+
     _channel->disableAllEvent();
     int sockfd = _channel->fd();
     _channel.reset(nullptr);
@@ -96,9 +98,8 @@ Connector::handleWrite ()
     } else {
         setState(State::kConnected);
         std::cout << "Connector: connected" << std::endl;
-        if (_newConnectionCallback) {
-            _newConnectionCallback(sockfd);
+        if (_connectCallback) {
+            _connectCallback(sockfd);   // close sockfd will be handled in callback
         }
-        sockops::close(sockfd);
     }
 }

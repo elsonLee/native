@@ -34,13 +34,12 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection>
         void setCloseCallback (const CloseCallback& cb) { _close_cb = cb; }
         void setMessageCallback (const MessageCallback& cb) { _message_cb = cb; }
 
-        void disconnect ();
-
         void send (const std::string& message);
 
         void shutdown ();
 
         void connectEstablished ();
+        void connectDestroy ();
 
     private:
         void sendInLoop (const std::string& message);

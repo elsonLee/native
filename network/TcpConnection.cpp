@@ -23,13 +23,11 @@ TcpConnection::TcpConnection (EventLoop* loop, const std::string& name, int sock
     std::cout << "[TcpConnection] create '" << _name << "'" << std::endl;
 }
 
-
 TcpConnection::~TcpConnection ()
 {
     _channel.disableAllEvent();
     std::cout << "[TcpConnection] delete '" << _name << "'" << std::endl;
 }
-
 
 void
 TcpConnection::handleReadEvent ()
@@ -48,7 +46,6 @@ TcpConnection::handleReadEvent ()
     }
 }
 
-
 void
 TcpConnection::handleWriteEvent ()
 {
@@ -65,7 +62,6 @@ TcpConnection::handleWriteEvent ()
     }
 }
 
-
 void
 TcpConnection::handleCloseEvent ()
 {
@@ -74,18 +70,6 @@ TcpConnection::handleCloseEvent ()
     assert(_close_cb);
     _close_cb(shared_from_this());
 }
-
-
-void
-TcpConnection::disconnect ()
-{
-    _channel.disableAllEvent();
-    setState(State::kConnecting);
-    if (_disconnect_cb) {
-        _disconnect_cb(shared_from_this());
-    }
-}
-
 
 void
 TcpConnection::send (const std::string& message)
@@ -98,7 +82,6 @@ TcpConnection::send (const std::string& message)
         }
     }
 }
-
 
 void
 TcpConnection::sendInLoop (const std::string& message)
@@ -128,7 +111,6 @@ TcpConnection::sendInLoop (const std::string& message)
     //std::cout << "[TcpConnection] send " << message.size() << " Bytes" << std::endl;
 }
 
-
 void
 TcpConnection::connectEstablished ()
 {
@@ -140,16 +122,26 @@ TcpConnection::connectEstablished ()
     _connect_cb(shared_from_this());
 }
 
+void
+TcpConnection::connectDestroy ()
+{
+    _loop->assertInLoopThread();
+    if (_state == State::kConnected) {
+        setState(State::kDisconnected);
+
+        _channel.disableAllEvent();
+        _disconnect_cb(shared_from_this());
+    }
+}
 
 void
 TcpConnection::shutdownInLoop ()
 {
     _loop->assertInLoopThread();
-    if (!_channel.isWriteEventOn()) {
+    if (!_channel.isWriting()) {
         _socket.shutdownWrite();
     }
 }
-
 
 void
 TcpConnection::shutdown ()

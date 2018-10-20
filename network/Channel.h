@@ -28,6 +28,9 @@ class Channel
         void setCloseCallback (const CallbackFn& close_cb) { _close_cb = close_cb; }
         void setErrorCallback (const CallbackFn& error_cb) { _error_cb = error_cb; }
 
+        bool isReading () const { return _is_reading; }
+        bool isWriting () const { return _is_writing; }
+
         bool enableReadEvent ();
         bool disableReadEvent ();
         bool isReadEventOn () const;
@@ -47,6 +50,10 @@ class Channel
         EventLoop*        _event_loop;
         int               _events;
         int               _revents;
+
+        bool              _is_reading;
+        bool              _is_writing;
+
         CallbackFn        _read_cb;
         CallbackFn        _write_cb;
         CallbackFn        _close_cb;

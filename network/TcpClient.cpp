@@ -10,26 +10,27 @@ TcpClient::TcpClient (const std::string& name,
                       const InetAddress& server_addr)
     : _name(name),
       _loop(loop),
-      _connector(std::make_unique<Connector>(loop, server_addr)),
+      _connector(loop, server_addr),
       _next_conn_id(0),
-      _conn_cb(nullptr),
+      _connect_cb(nullptr),
       _close_cb(nullptr),
-      _write_complete_cb(nullptr)
+      _write_complete_cb(nullptr),
+      _message_cb(nullptr)
 {
-    _connector->setNewConnectionCallback(
+    _connector.setConnectCallback(
             [this] (int sockfd) {
-                newConnection(sockfd);
+                handleConnectEvent(sockfd);
             });
 }
 
 void
 TcpClient::connect ()
 {
-    _connector->start();
+    _connector.start();
 }
 
 void
-TcpClient::newConnection (int sockfd)
+TcpClient::handleConnectEvent (int sockfd)
 {
     _loop->assertInLoopThread();
     InetAddress local_addr(sockops::getLocalAddr(sockfd));
@@ -39,24 +40,25 @@ TcpClient::newConnection (int sockfd)
     ++_next_conn_id;
     std::string conn_name = _name + buf;
 
-    auto shared_conn = std::make_shared<TcpConnection>(_loop,
-                                                       conn_name,
-                                                       sockfd,
-                                                       local_addr,
-                                                       peer_addr);
-    shared_conn->setConnectCallback(_conn_cb);
-    shared_conn->setDisconnectCallback(nullptr);
-    shared_conn->setMessageCallback(nullptr);
-    shared_conn->setCloseCallback([this, shared_conn](std::shared_ptr<TcpConnection> connPtr){ removeConnection(shared_conn); });
+    // sockfd will be closed in TcpConnection._socket.~Socket()
+    auto connPtr = std::make_shared<TcpConnection>(_loop, conn_name, sockfd,
+                                                   local_addr, peer_addr);
+    connPtr->setConnectCallback(_connect_cb);
+    connPtr->setDisconnectCallback(nullptr);
+    connPtr->setMessageCallback(_message_cb);
+    connPtr->setCloseCallback(
+            [this](const std::shared_ptr<TcpConnection>& conn){
+                     removeConnectionDelayed(conn);
+                  });
 
-    shared_conn->connectEstablished();
+    connPtr->connectEstablished();
 }
 
 void
-TcpClient::removeConnection (const std::shared_ptr<TcpConnection>& shared_conn)
+TcpClient::removeConnectionDelayed (const std::shared_ptr<TcpConnection>& connPtr)
 {
     // NOTE: cannot delete TcpConnection here, it will trigger destructor of Channel and current function is
     // called by Channel, so deletion must be delayed
     //::delete conn;
-    _loop->queueInLoop([shared_conn]{ shared_conn->disconnect(); /*::delete conn;*/ });
+    _loop->queueInLoop([connPtr]{ connPtr->connectDestroy(); /*::delete conn;*/ });
 }

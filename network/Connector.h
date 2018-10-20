@@ -10,7 +10,7 @@ class EventLoop;
 class Connector
 {
     public:
-        using NewConnectionCallback = std::function<void(int sockfd)>;
+        using ConnectCallback = std::function<void(int sockfd)>;
 
         Connector (EventLoop* loop, const InetAddress& server_addr);
         ~Connector () = default;
@@ -18,8 +18,8 @@ class Connector
         Connector (const Connector&) = delete;
         Connector& operator= (const Connector&) = delete;
 
-        void setNewConnectionCallback (const NewConnectionCallback& cb) {
-            _newConnectionCallback = cb;
+        void setConnectCallback (const ConnectCallback& cb) {
+            _connectCallback = cb;
         }
 
         void start ();
@@ -31,7 +31,7 @@ class Connector
         void connect ();
         void connecting (int sockfd);
 
-        void handleWrite ();
+        void handleConnectingEvent ();
 
     private:
         enum class State {
@@ -48,5 +48,5 @@ class Connector
         EventLoop*                  _loop;
         InetAddress                 _server_addr;
         std::unique_ptr<Channel>    _channel;
-        NewConnectionCallback       _newConnectionCallback;
+        ConnectCallback             _connectCallback;
 };

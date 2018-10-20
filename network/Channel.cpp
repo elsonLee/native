@@ -105,12 +105,20 @@ Channel::handleEvent ()
     // NOTE: peer close may not trigger EPOLLRDHUP, so put EPOLLRDHUP
     // here, handle with read, if read return 0, it means peer closed
     if (_revents & (EPOLLIN | EPOLLPRI | EPOLLRDHUP)) {
-        if (_read_cb) { _read_cb(); }
+        if (_read_cb) {
+            _is_reading = true;
+            _read_cb();
+            _is_reading = false;
+        }
     }
 
     // available for write -> EPOLLOUT
     if (_revents & EPOLLOUT) {
-        if (_write_cb) { _write_cb(); }
+        if (_write_cb) {
+            _is_writing = true;
+            _write_cb();
+            _is_writing = false;
+        }
     }
 
     if (_revents & EPOLLERR) {

@@ -71,6 +71,6 @@ TcpServer::removeConnection (const std::shared_ptr<TcpConnection>& connPtr)
     // NOTE: cannot delete TcpConnection here, it will trigger destructor of Channel and current function is
     // called by Channel, so deletion must be delayed and run in loop
     //::delete conn;
-    _loop->queueInLoop([connPtr]{ connPtr->disconnect(); /*::delete conn delayed to loop*/ });
+    _loop->queueInLoop([connPtr]{ connPtr->connectDestroy(); /*::delete conn delayed to loop*/ });
     _connections.erase(connPtr->name());
 }
