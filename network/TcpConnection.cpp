@@ -1,5 +1,6 @@
 #include "Common.h"
 
+#include "Slice.h"
 #include "EventLoop.h"
 #include "Socket.h"
 #include "Channel.h"
@@ -74,6 +75,12 @@ TcpConnection::handleCloseEvent ()
 void
 TcpConnection::send (const std::string& message)
 {
+    send(Slice(message));
+}
+
+void
+TcpConnection::send (const Slice& message)
+{
     if (_state == State::kConnected) {
         if (_loop->isInLoopThread()) {
             sendInLoop(message);
@@ -84,7 +91,7 @@ TcpConnection::send (const std::string& message)
 }
 
 void
-TcpConnection::sendInLoop (const std::string& message)
+TcpConnection::sendInLoop (const Slice& message)
 {
     _loop->assertInLoopThread();
     ssize_t nwrote = 0;

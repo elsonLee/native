@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Common.h"
+#include "Slice.h"
 #include "Buffer.h"
 #include "Acceptor.h"
 #include "Channel.h"

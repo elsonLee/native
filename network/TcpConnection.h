@@ -7,6 +7,7 @@
 #include <string>
 #include <functional>
 
+class Slice;
 class EventLoop;
 class Socket;
 class Channel;
@@ -35,6 +36,7 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection>
         void setMessageCallback (const MessageCallback& cb) { _message_cb = cb; }
 
         void send (const std::string& message);
+        void send (const Slice& message);
 
         void shutdown ();
 
@@ -42,7 +44,7 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection>
         void connectDestroy ();
 
     private:
-        void sendInLoop (const std::string& message);
+        void sendInLoop (const Slice& message);
         void shutdownInLoop ();
 
         void handleReadEvent ();
