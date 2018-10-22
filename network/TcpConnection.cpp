@@ -138,7 +138,7 @@ void
 TcpConnection::shutdownInLoop ()
 {
     _loop->assertInLoopThread();
-    if (!_channel.isWriting()) {
+    if (!_channel.isWriteEventOn()) {
         _socket.shutdownWrite();
     }
 }

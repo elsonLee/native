@@ -106,18 +106,14 @@ Channel::handleEvent ()
     // here, handle with read, if read return 0, it means peer closed
     if (_revents & (EPOLLIN | EPOLLPRI | EPOLLRDHUP)) {
         if (_read_cb) {
-            _is_reading = true;
             _read_cb();
-            _is_reading = false;
         }
     }
 
     // available for write -> EPOLLOUT
     if (_revents & EPOLLOUT) {
         if (_write_cb) {
-            _is_writing = true;
             _write_cb();
-            _is_writing = false;
         }
     }
 
