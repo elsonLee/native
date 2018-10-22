@@ -2,7 +2,7 @@
 
 #include <cstdio>
 
-void connectionCallback (const TcpConnection& conn)
+void connectionCallback (const std::shared_ptr<TcpConnection>& conn)
 {
     printf("client connected\n");
 }
@@ -13,7 +13,7 @@ int main ()
     auto loop = loop_thread.start();
 
     TcpClient client("client", loop, InetAddress(5000));
-    client.setConnectionCallback(connectionCallback);
+    client.setConnectCallback(connectionCallback);
     client.connect();
 
     sleep(10);

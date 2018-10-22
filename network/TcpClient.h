@@ -25,6 +25,8 @@ class TcpClient
 
         ~TcpClient () = default;
 
+        void connect (void);
+
         void setConnectCallback (const ConnectCallback& cb) {
             _connect_cb = cb;
         }
@@ -42,7 +44,6 @@ class TcpClient
         }
 
     private:
-        void connect (void);
         void disconnect (void);
 
         void handleConnectEvent (int sockfd);

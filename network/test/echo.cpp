@@ -3,34 +3,36 @@
 #include <stdio.h>
 #include <iostream>
 
+using TcpConnectionPtr = std::shared_ptr<TcpConnection>;
+
 void
-onConnection (const TcpConnection& conn)
+onConnection (const TcpConnectionPtr& conn)
 {
     printf("onConnection(): new connection [%s]\n",
-            conn.name().c_str());
+            conn->name().c_str());
 }
 
 
 void
-onDisconnection (const TcpConnection& conn)
+onDisconnection (const TcpConnectionPtr& conn)
 {
     printf("onDisonnection(): del connection [%s]\n",
-            conn.name().c_str());
+            conn->name().c_str());
 }
 
 
 void
-onMessage (TcpConnection& conn, Buffer& buf)
+onMessage (const TcpConnectionPtr& conn, Buffer& buf)
 {
     int len = buf.readableBytes();
     if (len > 0) {
         char tmp[len+1];
         tmp[len] = '\0';
         len = buf.retrieve(&tmp, len);
-        conn.send(std::string(tmp));
+        conn->send(Slice(tmp));
     } else {
         printf("onMessage(): receive %d bytes from conn [%s]\n",
-                len, conn.name().c_str());
+                len, conn->name().c_str());
     }
 }
 
@@ -41,8 +43,8 @@ int main ()
     EventLoop loop;
 
     TcpServer server("echoServer", &loop, listen_addr);
-    server.setConnectionCallback(onConnection);
-    server.setDisconnectionCallback(onDisconnection);
+    server.setConnectCallback(onConnection);
+    server.setDisconnectCallback(onDisconnection);
     server.setMessageCallback(onMessage);
     server.start();
 

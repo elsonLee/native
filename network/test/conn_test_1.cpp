@@ -1,10 +1,10 @@
 #include "Header.h"
 
-void onMessage (TcpConnection& conn, Buffer& buf)
+void onMessage (const std::shared_ptr<TcpConnection>& conn, Buffer& buf)
 {
     sleep(6);
     printf("read: %s\n", buf.peek());
-    printf("conn name: %s\n", conn.name().c_str());
+    printf("conn name: %s\n", conn->name().c_str());
 }
 
 int main ()
