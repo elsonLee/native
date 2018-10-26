@@ -101,7 +101,7 @@ class SessionManager
                         session->bytes_read(),
                         session->bytes_write());
                 printf("%.2lf MiB/s throughput\n",
-                        static_cast<double>(session->bytes_read() * 10e6)/(_timeout * 1024 * 1024));
+                        static_cast<double>(session->bytes_read())/((_timeout/1000000) * 1024 * 1024));
             }
         }
 
@@ -147,7 +147,7 @@ int main (int argc, char** argv)
     EventLoop loop;
     InetAddress server_addr(9981);
 
-    SessionManager session_mgr(&loop, server_addr, 256, 1000000);
+    SessionManager session_mgr(&loop, server_addr, 16 * 1024, 3000000);
 
     loop.run();
 
