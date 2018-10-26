@@ -4,6 +4,8 @@
 #include <vector>
 #include <iostream>
 #include <cassert>
+#include <atomic>
+#include <unistd.h>
 
 using TcpConnectionPtr = std::shared_ptr<TcpConnection>;
 
@@ -77,31 +79,40 @@ class SessionManager
     public:
         SessionManager (EventLoop* loop,
                         const InetAddress& server_addr,
-                        int block_size,
+                        int block_size, int num_connection,
                         int timeout)
             : _loop(loop),
-             _timeout(timeout)
+             _timeout(timeout),
+             _num_connection(num_connection)
         {
+            std::cout << "num connection: " << _num_connection << std::endl;
             _loop->runAfter(timeout, [this]{ handleTimeout(); });
             for (int i = 0; i < block_size; i++) {
                 _message.push_back(static_cast<char>(i % 128));
             }
 
-            auto session = std::make_unique<Session>(loop, server_addr, this);
-            session->start();
-            _sessions.emplace_back(std::move(session));
+            for (int i = 0; i < _num_connection; i++) {
+                auto session = std::make_unique<Session>(loop, server_addr, this);
+                session->start();
+                _sessions.emplace_back(std::move(session));
+            }
         }
 
         void onDisconnection (const std::shared_ptr<TcpConnection>& connPtr)
         {
-            std::cout << "onDisconnection here" << std::endl;
-            for (auto& session : _sessions) {
-                assert(session->bytes_read() == session->bytes_write());
-                printf("read_bytes: %ld, write_bytes: %ld\n",
-                        session->bytes_read(),
-                        session->bytes_write());
+            if (_num_connection.fetch_sub(1) == 1) {
+                long long total_read_bytes = 0;
+                long long total_write_bytes = 0;
+                for (auto& session : _sessions) {
+                    assert(session->bytes_read() == session->bytes_write());
+                    total_read_bytes += session->bytes_read();
+                    total_write_bytes += session->bytes_write();
+                }
+                printf("read_bytes: %lld, write_bytes: %lld\n",
+                        total_read_bytes, total_write_bytes);
                 printf("%.2lf MiB/s throughput\n",
-                        static_cast<double>(session->bytes_read())/((_timeout/1000000) * 1024 * 1024));
+                        static_cast<double>(total_read_bytes)/((_timeout/1000000) * 1024 * 1024));
+                quit();
             }
         }
 
@@ -126,6 +137,7 @@ class SessionManager
     private:
         EventLoop*  _loop;
         int         _timeout;
+        std::atomic<int> _num_connection;
         std::string _message;
         std::vector<std::unique_ptr<Session>> _sessions;
 };
@@ -144,10 +156,25 @@ Session::onDisconnection (const TcpConnectionPtr& connPtr)
 
 int main (int argc, char** argv)
 {
+    int num_connection = 1000;
+    int opt;
+
+    while ((opt = getopt(argc, argv, "c:")) != -1) {
+        switch(opt) {
+            case 'c':
+                num_connection = atoi(optarg);
+                break;
+            default:
+                fprintf(stderr, "Usage: %s [-c nconn]\n",
+                        argv[0]);
+                exit(-1);
+        }
+    }
+
     EventLoop loop;
     InetAddress server_addr(9981);
 
-    SessionManager session_mgr(&loop, server_addr, 16 * 1024, 3000000);
+    SessionManager session_mgr(&loop, server_addr, 16 * 1024, num_connection, 5000000);
 
     loop.run();
 
