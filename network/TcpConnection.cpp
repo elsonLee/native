@@ -103,6 +103,9 @@ TcpConnection::send (const Slice& message)
     }
 }
 
+//! NOTE: if only partially data is sent successfully, the remaining
+//  data will be sent in handleWriteEvent from _outputBuffer,
+//  thus the input data can be destroied after this function return
 void
 TcpConnection::sendInLoop (const Slice& message)
 {
@@ -112,7 +115,7 @@ TcpConnection::sendInLoop (const Slice& message)
         nwrote = ::write(_channel.fd(), message.data(), message.size());
         if (nwrote >= 0) {
             if ((size_t)nwrote < message.size()) {
-                std::cout << "need write more data" << std::endl;
+                std::cout << "remain " << message.size() - nwrote << " bytes to send" << std::endl;
             }
         } else {
             nwrote = 0;

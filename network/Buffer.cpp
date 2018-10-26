@@ -15,6 +15,11 @@ Buffer::~Buffer ()
 
 }
 
+void
+Buffer::clearAll ()
+{
+    _writePos = _readPos = 0;
+}
 
 int
 Buffer::retrieve (void* data, int size)

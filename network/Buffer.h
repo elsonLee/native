@@ -12,6 +12,7 @@ class Buffer
         int readableBytes () const { return _writePos - _readPos; }
 
         int retrieve (void* data, int size);
+        void clearAll ();
         //std::string retrieveAsString (void* data);
         int append (const void* data, int size);
         int readFd (int fd, int& error);

@@ -68,6 +68,7 @@ Session::onMessage (const TcpConnectionPtr& conn, Buffer& buf)
     _bytes_read += buf.readableBytes();
     _bytes_write += buf.readableBytes();
     conn->send(Slice(buf.peek(), buf.readableBytes()));
+    buf.clearAll();
 }
 
 class SessionManager
@@ -144,7 +145,7 @@ int main (int argc, char** argv)
     EventLoop loop;
     InetAddress server_addr(9981);
 
-    SessionManager session_mgr(&loop, server_addr, 128, 1000);
+    SessionManager session_mgr(&loop, server_addr, 128, 10000);
 
     loop.run();
 
