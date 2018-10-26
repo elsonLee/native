@@ -40,7 +40,7 @@ TcpConnection::handleReadEvent ()
         assert(_message_cb);
         _message_cb(shared_from_this(), _input_buffer);
     } else if (n == 0) {    // received FIN
-        std::cout << "[TcpConnection] Client half closed" << std::endl;
+        std::cout << "[TcpConnection] peer half closed" << std::endl;
         handleCloseEvent();
     } else {
         // TODO: error handling
@@ -69,7 +69,15 @@ TcpConnection::handleCloseEvent ()
 {
     _loop->assertInLoopThread();
     _channel.disableAllEvent();
-    assert(_close_cb);
+
+    // _disconnect_cb won't be called in connectDestroy if shutdown called first
+    // FIXME
+    if (_disconnect_cb) {
+        _disconnect_cb(shared_from_this());
+    } else {
+        std::cout << "[TcpConnection#" << _name << "] no DisconnectCallback" << std::endl;
+    }
+
     if (_close_cb) {
         _close_cb(shared_from_this());
     } else {
@@ -119,7 +127,7 @@ TcpConnection::sendInLoop (const Slice& message)
         }
     }
 
-    std::cout << "send " << nwrote << " Bytes" << std::endl;
+    //std::cout << "send " << nwrote << " Bytes" << std::endl;
     //std::cout << "[TcpConnection] send " << message.size() << " Bytes" << std::endl;
 }
 
@@ -142,6 +150,7 @@ void
 TcpConnection::connectDestroy ()
 {
     _loop->assertInLoopThread();
+    std::cout << "TcpConnection connectDestroy: " << curStateName() << std::endl;
     if (_state == State::kConnected) {
         setState(State::kDisconnected);
 

@@ -34,7 +34,7 @@ class TcpClient
             _connect_cb = cb;
         }
 
-        void setDisonnectCallback (const DisconnectCallback& cb) {
+        void setDisconnectCallback (const DisconnectCallback& cb) {
             _disconnect_cb = cb;
         }
 

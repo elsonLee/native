@@ -76,4 +76,10 @@ TcpClient::removeConnectionDelayed (const std::shared_ptr<TcpConnection>& connPt
     // called by Channel, so deletion must be delayed
     //::delete conn;
     _loop->queueInLoop([connPtr]{ connPtr->connectDestroy(); /*::delete conn;*/ });
+
+    {
+        std::lock_guard<std::mutex> lk(_connMutex);
+        assert(_connPtr == connPtr);
+        _connPtr.reset();
+    }
 }

@@ -60,6 +60,16 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection>
             kDisconnected
         };
 
+        const char* curStateName () const {
+            switch (_state) {
+                case State::kConnecting:    return "kConnecting";
+                case State::kConnected:     return "kConnected";
+                case State::kDisconnecting: return "kDisconnecting";
+                case State::kDisconnected:  return "kDisconnected";
+                default: return "kErrorState";
+            }
+        }
+
         void setState (State s) { _state = s; }
 
         EventLoop*              _loop;
