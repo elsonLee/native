@@ -4,6 +4,7 @@ void onMessage (const std::shared_ptr<TcpConnection>& conn, Buffer& buf)
 {
     if (buf.readableBytes() > 0) {
         conn->send(Slice(buf.peek(), buf.readableBytes()));
+        buf.clearAll(); // client & server will be stuck without clearAll
     }
 }
 

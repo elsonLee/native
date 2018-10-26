@@ -36,7 +36,7 @@ TcpConnection::handleReadEvent ()
     int error = 0;
     int n = _input_buffer.readFd(_channel.fd(), error);
     if (n > 0) {
-        std::cout << "[TcpConnection] handleRead " << n << " Bytes" << std::endl;
+        //std::cout << "[TcpConnection] handleRead " << n << " Bytes" << std::endl;
         assert(_message_cb);
         _message_cb(shared_from_this(), _input_buffer);
     } else if (n == 0) {    // received FIN

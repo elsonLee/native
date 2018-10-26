@@ -141,6 +141,7 @@ Poller::poll (int timeout_in_mills, std::vector<Channel*>& triggered_channels)
     std::vector<struct epoll_event> revents(max_num_events);
     int num_events = epoll_wait(_fd, &*revents.begin(), _channel_map.size(), timeout_in_mills);
     if (num_events > 0) {
+        //std::cout << num_events << std::endl;
         for (int i = 0; i < num_events; i++)
         {
             auto ev = revents[i];

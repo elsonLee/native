@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <iostream>
+#include <cassert>
 
 using TcpConnectionPtr = std::shared_ptr<TcpConnection>;
 
@@ -95,6 +96,7 @@ class SessionManager
         {
             std::cout << "onDisconnection here" << std::endl;
             for (auto& session : _sessions) {
+                assert(session->bytes_read() == session->bytes_write());
                 printf("read_bytes: %ld, write_bytes: %ld\n",
                         session->bytes_read(),
                         session->bytes_write());
@@ -145,7 +147,7 @@ int main (int argc, char** argv)
     EventLoop loop;
     InetAddress server_addr(9981);
 
-    SessionManager session_mgr(&loop, server_addr, 128, 10000);
+    SessionManager session_mgr(&loop, server_addr, 256, 1000000);
 
     loop.run();
 
