@@ -33,6 +33,24 @@ Connector::startInLoop ()
 }
 
 void
+Connector::stop ()
+{
+    _loop->runInLoop([this]{ stopInLoop(); });
+}
+
+void
+Connector::stopInLoop ()
+{
+    _loop->assertInLoopThread();
+    assert(_state == State::kDisconnecting);
+
+    int sockfd = _channel->fd();
+    _channel->disableAllEvent();
+    _channel->reset(nullptr);
+    sockops::close(sockfd);
+}
+
+void
 Connector::connect ()
 {
     _loop->assertInLoopThread();

@@ -23,11 +23,12 @@ class Connector
         }
 
         void start ();
-        void startInLoop ();
-        //void restart ();
-        //void stop ();
+        void stop ();
 
     private:
+        void startInLoop ();
+        void stopInLoop ();
+
         void connect ();
         void connecting (int sockfd);
 

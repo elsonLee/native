@@ -37,6 +37,7 @@ TcpConnection::handleReadEvent ()
     int n = _input_buffer.readFd(_channel.fd(), error);
     if (n > 0) {
         std::cout << "[TcpConnection] handleRead " << n << " Bytes" << std::endl;
+        assert(_message_cb);
         _message_cb(shared_from_this(), _input_buffer);
     } else if (n == 0) {    // received FIN
         std::cout << "[TcpConnection] Client half closed" << std::endl;
@@ -69,7 +70,11 @@ TcpConnection::handleCloseEvent ()
     _loop->assertInLoopThread();
     _channel.disableAllEvent();
     assert(_close_cb);
-    _close_cb(shared_from_this());
+    if (_close_cb) {
+        _close_cb(shared_from_this());
+    } else {
+        std::cout << "[TcpConnection#" << _name << "] no CloseCallback" << std::endl;
+    }
 }
 
 void
@@ -126,7 +131,11 @@ TcpConnection::connectEstablished ()
     setState(State::kConnected);
 
     _channel.enableReadEvent();
-    _connect_cb(shared_from_this());
+    if (_connect_cb) {
+        _connect_cb(shared_from_this());
+    } else {
+        std::cout << "[TcpConnection#" << _name << "] no ConnectCallback" << std::endl;
+    }
 }
 
 void
@@ -137,7 +146,11 @@ TcpConnection::connectDestroy ()
         setState(State::kDisconnected);
 
         _channel.disableAllEvent();
-        _disconnect_cb(shared_from_this());
+        if (_disconnect_cb) {
+            _disconnect_cb(shared_from_this());
+        } else {
+            std::cout << "[TcpConnection#" << _name << "] no DisconnectCallback" << std::endl;
+        }
     }
 }
 

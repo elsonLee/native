@@ -17,7 +17,7 @@ TcpClient::TcpClient (const std::string& name,
       _message_cb(nullptr)
 {
     _connector.setConnectCallback(
-            [this] (int sockfd) {
+            [this](int sockfd) {
                 handleConnectEvent(sockfd);
             });
 }
