@@ -1,9 +1,11 @@
 #pragma once
 
 #include "InetAddress.h"
+//#include "TcpConnection.h"
 #include "Connector.h"
 #include "Buffer.h"
 
+#include <mutex>
 #include <functional>
 #include <string>
 #include <memory>
@@ -26,6 +28,7 @@ class TcpClient
         ~TcpClient () = default;
 
         void connect (void);
+        void disconnect (void);
 
         void setConnectCallback (const ConnectCallback& cb) {
             _connect_cb = cb;
@@ -44,7 +47,6 @@ class TcpClient
         }
 
     private:
-        void disconnect (void);
 
         void handleConnectEvent (int sockfd);
         void removeConnectionDelayed (const std::shared_ptr<TcpConnection>& shared_conn);
@@ -59,4 +61,7 @@ class TcpClient
         DisconnectCallback          _disconnect_cb;
         WriteCompleteCallback       _write_complete_cb;
         MessageCallback             _message_cb;
+
+        mutable std::mutex              _connMutex;
+        std::shared_ptr<TcpConnection>  _connPtr;
 };

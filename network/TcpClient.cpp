@@ -29,6 +29,17 @@ TcpClient::connect ()
 }
 
 void
+TcpClient::disconnect ()
+{
+    {
+        std::lock_guard<std::mutex> lk(_connMutex);
+        if (_connPtr) {
+            _connPtr->shutdown();
+        }
+    }
+}
+
+void
 TcpClient::handleConnectEvent (int sockfd)
 {
     _loop->assertInLoopThread();
@@ -49,6 +60,11 @@ TcpClient::handleConnectEvent (int sockfd)
             [this](const std::shared_ptr<TcpConnection>& conn){
                      removeConnectionDelayed(conn);
                   });
+
+    {
+        std::lock_guard<std::mutex> lk(_connMutex);
+        _connPtr = connPtr;
+    }
 
     connPtr->connectEstablished();
 }

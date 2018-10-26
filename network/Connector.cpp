@@ -46,7 +46,7 @@ Connector::stopInLoop ()
 
     int sockfd = _channel->fd();
     _channel->disableAllEvent();
-    _channel->reset(nullptr);
+    _channel.reset(nullptr);
     sockops::close(sockfd);
 }
 
