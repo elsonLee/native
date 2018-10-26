@@ -21,13 +21,13 @@ TcpConnection::TcpConnection (EventLoop* loop, const std::string& name, int sock
     _channel.setReadCallback([this]{ handleReadEvent(); });
     _channel.setWriteCallback([this]{ handleWriteEvent(); });
     _channel.setCloseCallback([this]{ handleCloseEvent(); });
-    std::cout << "[TcpConnection] create '" << _name << "'" << std::endl;
+    std::cout << "[TcpConnection#" << _name << "] ctor" << std::endl;
 }
 
 TcpConnection::~TcpConnection ()
 {
     _channel.disableAllEvent();
-    std::cout << "[TcpConnection] delete '" << _name << "'" << std::endl;
+    std::cout << "[TcpConnection#" << _name << "] dtor" << std::endl;
 }
 
 void
