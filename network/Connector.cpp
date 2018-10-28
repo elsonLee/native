@@ -115,7 +115,7 @@ Connector::handleConnectingEvent ()
         sockops::close(sockfd);
     } else {
         setState(State::kConnected);
-        std::cout << "Connector: connected" << std::endl;
+        //std::cout << "Connector: connected" << std::endl;
         if (_connectCallback) {
             _connectCallback(sockfd);   // close sockfd will be handled in callback
         }

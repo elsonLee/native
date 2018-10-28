@@ -86,6 +86,7 @@ TimerQueue::getExpired (Timestamp now)
     auto it = _timers.lower_bound(std::make_pair(now, reinterpret_cast<Timer*>(UINTPTR_MAX)));
     std::copy(_timers.begin(), it, std::back_inserter(expired));
     _timers.erase(_timers.begin(), it);
+    std::cout << "getExpired: " << expired.size() << std::endl;
     return expired;
 }
 

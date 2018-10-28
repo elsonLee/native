@@ -1,5 +1,7 @@
 CPP = g++
-CFLAGS = -g -std=c++17 -Wall -I./
+CFLAGS = -std=c++17 -Wall -I./ \
+	 -g
+	 #-O2
 LDFLAG = -lpthread
 SOURCES = Acceptor.cpp \
           Buffer.cpp \

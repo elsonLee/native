@@ -45,9 +45,9 @@ TcpServer::handleNewConnectionEvent (int peer_fd, const InetAddress& peer_addr)
     _next_conn_id++;
     std::string conn_name = _name + buf;
 
-    std::cout << "[TcpServer] " << _name
-              << " new connection [" << conn_name
-              << "]" << std::endl;
+    //std::cout << "[TcpServer] " << _name
+    //          << " new connection [" << conn_name
+    //          << "]" << std::endl;
 
     InetAddress local_addr(sockops::getLocalAddr(peer_fd));
     auto connPtr = std::make_shared<TcpConnection>(_loop, conn_name, peer_fd, local_addr, peer_addr);

@@ -21,13 +21,13 @@ TcpConnection::TcpConnection (EventLoop* loop, const std::string& name, int sock
     _channel.setReadCallback([this]{ handleReadEvent(); });
     _channel.setWriteCallback([this]{ handleWriteEvent(); });
     _channel.setCloseCallback([this]{ handleCloseEvent(); });
-    std::cout << "[TcpConnection#" << _name << "] ctor" << std::endl;
+    //std::cout << "[TcpConnection#" << _name << "] ctor" << std::endl;
 }
 
 TcpConnection::~TcpConnection ()
 {
     _channel.disableAllEvent();
-    std::cout << "[TcpConnection#" << _name << "] dtor" << std::endl;
+    //std::cout << "[TcpConnection#" << _name << "] dtor" << std::endl;
 }
 
 void
@@ -40,11 +40,11 @@ TcpConnection::handleReadEvent ()
         assert(_message_cb);
         _message_cb(shared_from_this(), _input_buffer);
     } else if (n == 0) {    // received FIN
-        std::cout << "[TcpConnection] peer half closed" << std::endl;
+        //std::cout << "[TcpConnection] peer half closed" << std::endl;
         handleCloseEvent();
     } else {
-        // TODO: error handling
-        std::cerr << "TcpConnection::handleRead error: " << error << std::endl;
+        std::cerr << "TcpConnection::handleError: " << strerror(error) << std::endl;
+        //handleErrorEvent();
     }
 }
 
@@ -75,14 +75,21 @@ TcpConnection::handleCloseEvent ()
     if (_disconnect_cb) {
         _disconnect_cb(shared_from_this());
     } else {
-        std::cout << "[TcpConnection#" << _name << "] no DisconnectCallback" << std::endl;
+        //std::cout << "[TcpConnection#" << _name << "] no DisconnectCallback" << std::endl;
     }
 
     if (_close_cb) {
         _close_cb(shared_from_this());
     } else {
-        std::cout << "[TcpConnection#" << _name << "] no CloseCallback" << std::endl;
+        //std::cout << "[TcpConnection#" << _name << "] no CloseCallback" << std::endl;
     }
+}
+
+void
+TcpConnection::handleErrorEvent ()
+{
+    int error = sockops::getSocketError(_channel.fd());
+    std::cerr << "TcpConnection::handleError: " << strerror(error) << std::endl;
 }
 
 void
@@ -115,11 +122,16 @@ TcpConnection::sendInLoop (const Slice& message)
         nwrote = ::write(_channel.fd(), message.data(), message.size());
         if (nwrote >= 0) {
             if ((size_t)nwrote < message.size()) {
-                std::cout << "remain " << message.size() - nwrote << " bytes to send" << std::endl;
+                //std::cout << "remain " << message.size() - nwrote << " bytes to send" << std::endl;
             }
         } else {
             nwrote = 0;
-            std::cerr << "[TcpConnection] sendInLoop error" << std::endl;
+            if (errno == EWOULDBLOCK) {
+                // ie. Resource temporarily unavailable
+                std::cerr << "[TcpConnection] sendInLoop EWOULDBLOCK: " << strerror(errno) << std::endl;
+            } else {
+                std::cerr << "[TcpConnection] sendInLoop error: " << strerror(errno) << std::endl;
+            }
         }
     }
 
@@ -145,7 +157,7 @@ TcpConnection::connectEstablished ()
     if (_connect_cb) {
         _connect_cb(shared_from_this());
     } else {
-        std::cout << "[TcpConnection#" << _name << "] no ConnectCallback" << std::endl;
+        //std::cout << "[TcpConnection#" << _name << "] no ConnectCallback" << std::endl;
     }
 }
 
@@ -153,7 +165,7 @@ void
 TcpConnection::connectDestroy ()
 {
     _loop->assertInLoopThread();
-    std::cout << "TcpConnection connectDestroy: " << curStateName() << std::endl;
+    //std::cout << "TcpConnection connectDestroy: " << curStateName() << std::endl;
     if (_state == State::kConnected) {
         setState(State::kDisconnected);
 
@@ -161,7 +173,7 @@ TcpConnection::connectDestroy ()
         if (_disconnect_cb) {
             _disconnect_cb(shared_from_this());
         } else {
-            std::cout << "[TcpConnection#" << _name << "] no DisconnectCallback" << std::endl;
+            //std::cout << "[TcpConnection#" << _name << "] no DisconnectCallback" << std::endl;
         }
     }
 }
@@ -178,6 +190,7 @@ TcpConnection::shutdownInLoop ()
 void
 TcpConnection::shutdown ()
 {
+    assert(_state == State::kConnected);
     if (_state == State::kConnected) {
         setState(State::kDisconnecting);
         _loop->runInLoop([this]{ shutdownInLoop(); });

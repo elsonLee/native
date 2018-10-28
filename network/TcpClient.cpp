@@ -33,9 +33,10 @@ TcpClient::disconnect ()
 {
     {
         std::lock_guard<std::mutex> lk(_connMutex);
-        if (_connPtr) {
+        assert(_connPtr);
+        //if (_connPtr) {
             _connPtr->shutdown();
-        }
+        //}
     }
 }
 

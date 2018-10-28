@@ -4,6 +4,7 @@
 #include "Timestamp.h"
 
 #include <functional>
+#include <cassert>
 
 class Timer
 {
@@ -11,7 +12,10 @@ class Timer
         Timer (const std::function<void()>& cb, Timestamp expiration, MicroSeconds interval);
         ~Timer ();
 
-        void run () const { _callback(); }
+        void run () const {
+            assert(_callback);
+            _callback();
+        }
 
         void restart () { _expiration += _interval; }
         Timestamp expiration () const { return _expiration; }

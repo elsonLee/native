@@ -101,6 +101,8 @@ class SessionManager
         void onDisconnection (const std::shared_ptr<TcpConnection>& connPtr)
         {
             if (_num_connection.fetch_sub(1) == 1) {
+                std::cout << "quit" << std::endl;
+                quit();
                 long long total_read_bytes = 0;
                 long long total_write_bytes = 0;
                 for (auto& session : _sessions) {
@@ -112,7 +114,6 @@ class SessionManager
                         total_read_bytes, total_write_bytes);
                 printf("%.2lf MiB/s throughput\n",
                         static_cast<double>(total_read_bytes)/((_timeout/1000000) * 1024 * 1024));
-                quit();
             }
         }
 
@@ -123,11 +124,12 @@ class SessionManager
     private:
 
         void quit () {
-            _loop->queueInLoop([this]{ _loop->quit(); });
+            _loop->runInLoop([this]{ _loop->quit(); });
         }
 
         void handleTimeout ()
         {
+            std::cout << "Session Manager timeout" << std::endl;
             std::for_each(_sessions.begin(), _sessions.end(),
                     [](const std::unique_ptr<Session>& session) {
                         session->stop(); 
@@ -174,7 +176,7 @@ int main (int argc, char** argv)
     EventLoop loop;
     InetAddress server_addr(9981);
 
-    SessionManager session_mgr(&loop, server_addr, 16 * 1024, num_connection, 5000000);
+    SessionManager session_mgr(&loop, server_addr, 16 * 1024, num_connection, 10000000);
 
     loop.run();
 
