@@ -29,7 +29,7 @@ class ProtobufCodec
         ProtobufCodec (const ProtobufCodec&) = delete;
         ProtobufCodec& operator= (const ProtobufCodec&) = delete;
 
-        void onRecvMessage (const std::shared_ptr<TcpConnection>&, Buffer&);
+        void recvMessage (const std::shared_ptr<TcpConnection>&, Buffer&);
 
         void sendMessage (const std::shared_ptr<TcpConnection>&, const protobuf::Message&);
 

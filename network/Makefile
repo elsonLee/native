@@ -18,7 +18,8 @@ SOURCES = Acceptor.cpp \
 	  TcpClient.cpp \
 	  Timer.cpp \
 	  TimerQueue.cpp \
-	  ProtobufCodec.cpp
+	  ProtobufCodec.cpp \
+	  ProtobufDispatcher.cpp
 
 OBJ_DIR = ./objs
 OBJECTS = $(addprefix $(OBJ_DIR)/, $(notdir $(SOURCES:.cpp=.o)))

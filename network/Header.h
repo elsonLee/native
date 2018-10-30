@@ -20,3 +20,4 @@
 #include "Timestamp.h"
 #include "Utility.h"
 #include "ProtobufCodec.h"
+#include "ProtobufDispatcher.h"

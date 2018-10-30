@@ -5,7 +5,7 @@
 #include <cassert>
 
 void
-ProtobufCodec::onRecvMessage (const std::shared_ptr<TcpConnection>& connPtr, Buffer& buf)
+ProtobufCodec::recvMessage (const std::shared_ptr<TcpConnection>& connPtr, Buffer& buf)
 {
     while (buf.readableBytes() >= kHeaderLen)
     {
