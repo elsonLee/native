@@ -2,7 +2,7 @@ CPP = g++
 CFLAGS = -std=c++17 -Wall -I./ \
 	 -g
 	 #-O2
-LDFLAG = -lpthread
+LDFLAG = -lprotobuf -pthread
 SOURCES = Acceptor.cpp \
           Buffer.cpp \
 	  Channel.cpp \
@@ -17,7 +17,8 @@ SOURCES = Acceptor.cpp \
 	  TcpServer.cpp \
 	  TcpClient.cpp \
 	  Timer.cpp \
-	  TimerQueue.cpp
+	  TimerQueue.cpp \
+	  ProtobufCodec.cpp
 
 OBJ_DIR = ./objs
 OBJECTS = $(addprefix $(OBJ_DIR)/, $(notdir $(SOURCES:.cpp=.o)))

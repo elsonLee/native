@@ -19,3 +19,4 @@
 #include "TimerQueue.h"
 #include "Timestamp.h"
 #include "Utility.h"
+#include "ProtobufCodec.h"

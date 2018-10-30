@@ -10,6 +10,8 @@ class Buffer
 
         ~Buffer ();
 
+        bool empty () const { return readableBytes() == 0; }
+
         size_t readableBytes () const { return _write_pos - _read_pos; }
 
         const char* peek () const { return _buf.data() + _read_pos; }
