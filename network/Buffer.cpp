@@ -5,8 +5,8 @@
 #include <cassert>
 
 Buffer::Buffer () :
-    _readPos(0),
-    _writePos(0)
+    _read_pos(0),
+    _write_pos(0)
 {
 
 }
@@ -29,7 +29,7 @@ int16_t
 Buffer::readInt16 ()
 {
     int16_t ret = peekInt16();
-    _readPos += sizeof(ret);
+    _read_pos += sizeof(ret);
     return ret;
 }
 
@@ -46,7 +46,7 @@ int32_t
 Buffer::readInt32 ()
 {
     int32_t ret = peekInt32();
-    _readPos += sizeof(ret);
+    _read_pos += sizeof(ret);
     return ret;
 }
 
@@ -63,60 +63,61 @@ int64_t
 Buffer::readInt64 ()
 {
     int64_t ret = peekInt64();
-    _readPos += sizeof(ret);
+    _read_pos += sizeof(ret);
     return ret;
 }
 
 void
 Buffer::clearAll ()
 {
-    _writePos = _readPos = 0;
+    _write_pos = _read_pos = 0;
 }
 
 int
 Buffer::retrieve (void* data, int size)
 {
-    int readable = _writePos - _readPos;
+    int readable = _write_pos - _read_pos;
     if (size <= readable) {
         if (data) {
-            ::memcpy(data, &_buf[_readPos], size);
+            ::memcpy(data, &_buf[_read_pos], size);
         }
-        //printf("[Buffer] _readPos: %d, data: %s\n", _readPos, (char*)data);
-        _readPos += size;
+        //printf("[Buffer] _read_pos: %d, data: %s\n", _read_pos, (char*)data);
+        _read_pos += size;
         return size;
     } else {
         if (data) {
-            ::memcpy(data, &_buf[_readPos], readable);
+            ::memcpy(data, &_buf[_read_pos], readable);
         }
-        //printf("[Buffer] _readPos: %d, data: %s\n", _readPos, (char*)data);
-        _readPos = _writePos;
+        //printf("[Buffer] _read_pos: %d, data: %s\n", _read_pos, (char*)data);
+        _read_pos = _write_pos;
         return readable;
     }
 }
 
-
-int
-Buffer::append (const void* data, int size)
+void
+Buffer::ensureWriteableBytes (size_t len)
 {
-    int writeable = _buf.size() - _writePos;
-    if (size <= writeable) {
-        ::memcpy(&_buf[_writePos], data, size);
-        _writePos += size;
-        return size;
-    } else {
-        if (size <= _readPos + writeable) {
-            if (_writePos > _readPos) {
+    size_t writeable = _buf.size() - _write_pos;
+    if (len > writeable) {
+        if (len <= _read_pos + writeable) {
+            if (_write_pos > _read_pos) {
                 // FIXME
-                ::memmove(_buf.data(), _buf.data() + _readPos, size);
+                ::memmove(_buf.data(), _buf.data() + _read_pos, len);
             }
-            _writePos -= _readPos;
-            _readPos = 0;
+            _write_pos -= _read_pos;
+            _read_pos = 0;
         } else {
             //std::cout << "resize " << _buf.size() + size - writeable << " bytes" << std::endl;
-            _buf.resize(_buf.size() + size - writeable);
+            _buf.resize(_buf.size() + len - writeable);
         }
-        return append(data, size);
     }
+}
+
+void
+Buffer::append (const void* data, size_t len)
+{
+    ensureWriteableBytes(len);
+    ::memcpy(_buf.data() + _write_pos, data, len);
 }
 
 
