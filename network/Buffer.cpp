@@ -106,7 +106,8 @@ Buffer::append (const void* data, int size)
     } else {
         if (size <= _readPos + writeable) {
             if (_writePos > _readPos) {
-                std::swap(_buf.at(_readPos), _buf.at(0));
+                // FIXME
+                ::memmove(_buf.data(), _buf.data() + _readPos, size);
             }
             _writePos -= _readPos;
             _readPos = 0;
