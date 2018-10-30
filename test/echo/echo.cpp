@@ -25,6 +25,7 @@ void
 onMessage (const TcpConnectionPtr& conn, Buffer& buf)
 {
     int len = buf.readableBytes();
+    printf("onMessage(): len: %d\n", len);
     if (len > 0) {
         char tmp[len+1];
         tmp[len] = '\0';
