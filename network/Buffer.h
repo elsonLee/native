@@ -8,8 +8,16 @@ class Buffer
         Buffer ();
         ~Buffer ();
 
+        size_t readableBytes () const { return _writePos - _readPos; }
+
         const char* peek () const { return &_buf[_readPos]; }
-        int readableBytes () const { return _writePos - _readPos; }
+
+        int16_t peekInt16 () const;
+        int16_t readInt16 ();
+        int32_t peekInt32 () const;
+        int32_t readInt32 ();
+        int64_t peekInt64 () const;
+        int64_t readInt64 ();
 
         int retrieve (void* data, int size);
         void clearAll ();

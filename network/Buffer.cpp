@@ -1,6 +1,8 @@
 #include "Common.h"
 
 #include "Buffer.h"
+#include "SocketOps.h"
+#include <cassert>
 
 Buffer::Buffer () :
     _readPos(0),
@@ -9,10 +11,60 @@ Buffer::Buffer () :
 
 }
 
-
 Buffer::~Buffer ()
 {
 
+}
+
+int16_t
+Buffer::peekInt16 () const
+{
+    assert(readableBytes() >= sizeof(int16_t));
+    int16_t tmp = 0;
+    ::memcpy(&tmp, peek(), sizeof(int16_t));
+    return sockops::networkToHost16(tmp);
+}
+
+int16_t
+Buffer::readInt16 ()
+{
+    int16_t ret = peekInt16();
+    _readPos += sizeof(ret);
+    return ret;
+}
+
+int32_t
+Buffer::peekInt32 () const
+{
+    assert(readableBytes() >= sizeof(int32_t));
+    int32_t tmp = 0;
+    ::memcpy(&tmp, peek(), sizeof(int32_t));
+    return sockops::networkToHost32(tmp);
+}
+
+int32_t
+Buffer::readInt32 ()
+{
+    int32_t ret = peekInt32();
+    _readPos += sizeof(ret);
+    return ret;
+}
+
+int64_t
+Buffer::peekInt64 () const
+{
+    assert(readableBytes() >= sizeof(int64_t));
+    int64_t tmp = 0;
+    ::memcpy(&tmp, peek(), sizeof(int64_t));
+    return sockops::networkToHost64(tmp);
+}
+
+int64_t
+Buffer::readInt64 ()
+{
+    int64_t ret = peekInt64();
+    _readPos += sizeof(ret);
+    return ret;
 }
 
 void
