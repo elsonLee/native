@@ -20,6 +20,8 @@ class Buffer
         int64_t readInt64 ();
 
         int retrieve (void* data, int size);
+        int retrieve (int size) { return retrieve(nullptr, size); }
+
         void clearAll ();
         //std::string retrieveAsString (void* data);
         int append (const void* data, int size);
