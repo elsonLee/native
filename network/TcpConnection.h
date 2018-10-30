@@ -45,7 +45,7 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection>
         void connectDestroy ();
 
     private:
-        void sendInLoop (const Slice& message);
+        void sendInLoop (const Slice& slice);
         void shutdownInLoop ();
 
         void handleReadEvent ();

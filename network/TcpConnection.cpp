@@ -115,14 +115,14 @@ TcpConnection::send (const Slice& slice)
 //  data will be sent in handleWriteEvent from _outputBuffer,
 //  thus the input data can be destroied after this function return
 void
-TcpConnection::sendInLoop (const Slice& message)
+TcpConnection::sendInLoop (const Slice& slice)
 {
     _loop->assertInLoopThread();
     ssize_t nwrote = 0;
     if (!_channel.isWriteEventOn() && _output_buffer.readableBytes() == 0) {
-        nwrote = ::write(_channel.fd(), message.data(), message.size());
+        nwrote = ::write(_channel.fd(), slice.data(), slice.size());
         if (nwrote >= 0) {
-            if ((size_t)nwrote < message.size()) {
+            if ((size_t)nwrote < slice.size()) {
                 //std::cout << "remain " << message.size() - nwrote << " bytes to send" << std::endl;
             }
         } else {
@@ -136,8 +136,8 @@ TcpConnection::sendInLoop (const Slice& message)
         }
     }
 
-    if ((size_t)nwrote < message.size()) {
-        _output_buffer.append(message.data() + nwrote, message.size() - nwrote);
+    if ((size_t)nwrote < slice.size()) {
+        _output_buffer.append(slice.data() + nwrote, slice.size() - nwrote);
         if (!_channel.isWriteEventOn()) {
             _channel.enableWriteEvent();
         }
