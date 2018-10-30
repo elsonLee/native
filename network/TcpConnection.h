@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Channel.h"
 #include "InetAddress.h"
 #include "Buffer.h"
 #include "Socket.h"
@@ -36,7 +37,7 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection>
         void setMessageCallback (const MessageCallback& cb) { _message_cb = cb; }
 
         void send (const std::string& message);
-        void send (const Slice& message);
+        void send (const Slice& slice);
 
         void shutdown ();
 

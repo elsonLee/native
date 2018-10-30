@@ -99,13 +99,14 @@ TcpConnection::send (const std::string& message)
 }
 
 void
-TcpConnection::send (const Slice& message)
+TcpConnection::send (const Slice& slice)
 {
     if (_state == State::kConnected) {
         if (_loop->isInLoopThread()) {
-            sendInLoop(message);
+            sendInLoop(slice);
         } else {
-            _loop->runInLoop([this, &message](){ sendInLoop(message); });
+            // NOTE: must copy slice!
+            _loop->runInLoop([this, str=slice.toString()](){ sendInLoop(str); });
         }
     }
 }
@@ -136,7 +137,7 @@ TcpConnection::sendInLoop (const Slice& message)
     }
 
     if ((size_t)nwrote < message.size()) {
-        nwrote = _output_buffer.append(message.data() + nwrote, message.size() - nwrote);
+        _output_buffer.append(message.data() + nwrote, message.size() - nwrote);
         if (!_channel.isWriteEventOn()) {
             _channel.enableWriteEvent();
         }
