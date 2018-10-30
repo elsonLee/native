@@ -121,6 +121,11 @@ Buffer::append (const void* data, size_t len)
     writeSize(len);
 }
 
+void
+Buffer::appendInt32 (int32_t data)
+{
+    append(&data, sizeof(int32_t));
+}
 
 int
 Buffer::readFd (int fd, int& error)

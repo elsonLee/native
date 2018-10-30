@@ -16,6 +16,7 @@ class Buffer
 
         // FIXME: shouldn't expose to public API
         const char* writePos () const { return _buf.data() + _write_pos; }
+        char* writePos () { return _buf.data() + _write_pos; }
 
         // FIXME: shouldn't expose to public API
         void writeSize (size_t len) {
@@ -44,6 +45,8 @@ class Buffer
         void ensureWriteableBytes (size_t len);
 
         void append (const void* data, size_t len);
+
+        void appendInt32 (int32_t data);
 
         int readFd (int fd, int& error);
 
