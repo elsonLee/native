@@ -2,6 +2,8 @@
 
 #include "ProtobufDispatcher.h"
 
+#include <memory>
+
 template <typename ConcreteMessage>
 void
 ProtobufDispatcher::registerMessageCallback (const DispatcherMessageCallback<ConcreteMessage>& cb)
@@ -9,7 +11,8 @@ ProtobufDispatcher::registerMessageCallback (const DispatcherMessageCallback<Con
     auto descriptor = ConcreteMessage::descriptor();
     assert(descriptor);
 
-    _map.emplace({descriptor, std::unique_ptr(::new MessageWrapper(cb))});
+    _map.emplace({descriptor,
+            std::unique_ptr<MessageWrapperBase>(::new MessageWrapper<ConcreteMessage>(cb))});
 }
 
 void

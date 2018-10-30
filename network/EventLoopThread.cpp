@@ -2,8 +2,8 @@
 #include <mutex>
 #include <condition_variable>
 
-#include <EventLoop.h>
-#include <EventLoopThread.h>
+#include "EventLoop.h"
+#include "EventLoopThread.h"
 
 EventLoop*
 EventLoopThread::start ()

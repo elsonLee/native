@@ -18,7 +18,7 @@ class ProtobufCodec
                 const std::shared_ptr<TcpConnection>&,
                 std::unique_ptr<protobuf::Message>)>;   // FIXME: shouldn't use const shared_ptr& here?
 
-        ProtobufCodec (protobuf::Message* prototype,
+        ProtobufCodec (const protobuf::Message* prototype,
                        const ProtoMessageCallback& message_cb)
             : _prototype(prototype),
               _message_cb(message_cb)
