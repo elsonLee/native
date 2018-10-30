@@ -7,6 +7,8 @@
 
 using namespace tutorial;
 
+EventLoop* g_loop = nullptr;
+
 void
 printAddressBook (const AddressBook& address_book)
 {
@@ -100,10 +102,14 @@ Server::onMessage (const std::shared_ptr<TcpConnection>& connPtr, std::unique_pt
 {
     AddressBook* address_book = dynamic_cast<AddressBook*>(message.get());
     printAddressBook(*address_book);
+    g_loop->quit();
 }
 
 int main (int argc, char* argv[])
 {
+    EventLoop loop;
+    g_loop = &loop;
+
     std::thread([]{
                 EventLoop loop;
                 Server server("server", &loop, InetAddress(9981));
@@ -113,9 +119,12 @@ int main (int argc, char* argv[])
 
     std::thread([]{
                 EventLoop loop;
-                Server server("server", &loop, InetAddress(9981));
+                Client client("client", &loop, InetAddress(9981));
+                client.connect();
                 loop.run();
             }).detach();
+
+    g_loop->run();
 
     return 0;
 }

@@ -12,7 +12,7 @@ ProtobufCodec::recvMessage (const std::shared_ptr<TcpConnection>& connPtr, Buffe
         const int32_t len = buf.peekInt32();
         if (buf.readableBytes() >= kHeaderLen + len) {
             std::unique_ptr<protobuf::Message> messagePtr(_prototype->New());
-            bool parseStatus = parseFromSlice(Slice(buf.peek(), kHeaderLen + len), messagePtr.get());
+            bool parseStatus = parseFromSlice(Slice(buf.peek() + kHeaderLen, len), messagePtr.get());
             if (parseStatus) {
                 assert(_message_cb);
                 _message_cb(connPtr, std::move(messagePtr));

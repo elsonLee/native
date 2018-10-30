@@ -144,7 +144,7 @@ TcpConnection::sendInLoop (const Slice& slice)
     }
 
     //std::cout << "send " << nwrote << " Bytes" << std::endl;
-    //std::cout << "[TcpConnection] send " << message.size() << " Bytes" << std::endl;
+    std::cout << "[TcpConnection] send " << slice.size() << " Bytes" << std::endl;
 }
 
 void
