@@ -22,7 +22,7 @@ class Buffer
 
         // FIXME: shouldn't expose to public API
         void writeSize (size_t len) {
-            assert(_write_pos + len < _buf.size());
+            assert(_write_pos + len <= _buf.size());
             _write_pos += len;
         }
 

@@ -107,7 +107,7 @@ Buffer::ensureWriteableBytes (size_t len)
             _write_pos -= _read_pos;
             _read_pos = 0;
         } else {
-            //std::cout << "resize " << _buf.size() + size - writeable << " bytes" << std::endl;
+            //std::cout << "resize " << _buf.size() + len - writeable << " bytes" << std::endl;
             _buf.resize(_buf.size() + len - writeable);
         }
     }
