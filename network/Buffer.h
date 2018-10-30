@@ -1,16 +1,27 @@
 #pragma once
 
 #include <vector>
+#include <cassert>
 
 class Buffer
 {
     public:
         Buffer ();
+
         ~Buffer ();
 
         size_t readableBytes () const { return _write_pos - _read_pos; }
 
-        const char* peek () const { return &_buf[_read_pos]; }
+        const char* peek () const { return _buf.data() + _read_pos; }
+
+        // FIXME: shouldn't expose to public API
+        const char* writePos () const { return _buf.data() + _write_pos; }
+
+        // FIXME: shouldn't expose to public API
+        void writeSize (size_t len) {
+            assert(_write_pos + len < _buf.size());
+            _write_pos += len;
+        }
 
         int16_t peekInt16 () const;
 
@@ -37,7 +48,7 @@ class Buffer
         int readFd (int fd, int& error);
 
     private:
-        std::vector<char>   _buf;
-        size_t              _read_pos;
-        size_t              _write_pos;
+        std::vector<char>  _buf;
+        size_t             _read_pos;
+        size_t             _write_pos;
 };

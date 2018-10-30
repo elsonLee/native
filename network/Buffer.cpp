@@ -118,6 +118,7 @@ Buffer::append (const void* data, size_t len)
 {
     ensureWriteableBytes(len);
     ::memcpy(_buf.data() + _write_pos, data, len);
+    writeSize(len);
 }
 
 
