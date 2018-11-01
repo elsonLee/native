@@ -41,6 +41,21 @@ class RpcServer : public TcpServer
                         {
                           _codec.recvMessage(connPtr, buf);
                         });
+
+                assert(service);
+                const auto service_desc = service->GetDescriptor();
+                for (int i = 0; i < service_desc->method_count(); i++) {
+                    auto method_desc = service_desc->method(i);
+                    auto input_desc = method_desc->input_type();
+                    auto method_name = method_desc->name();
+                    auto iter = _methods.find(input_desc);
+                    if (iter == _methods.end()) {
+                        _methods.emplace(input_desc, method_name);
+                    } else {
+                        std::cerr << "method " << iter->second << "and method " <<
+                            method_name << " has the same output" << std::endl;
+                    }
+                }
             }
 
         void onConnect (const std::shared_ptr<TcpConnection>& connPtr)
@@ -58,7 +73,9 @@ class RpcServer : public TcpServer
 
             std::cout << "[rpcserver] onProtoMessage" << std::endl;
             const auto desc = _service->GetDescriptor();
-            const auto method = desc->FindMethodByName("Solve");
+            auto iter = _methods.find(message->GetDescriptor());
+            assert(iter != _methods.end());
+            const auto method = desc->FindMethodByName(iter->second);
             assert(method);
             testcase::Reply reply;
             _service->CallMethod(method, nullptr, message.get(), &reply, nullptr);
@@ -76,6 +93,7 @@ class RpcServer : public TcpServer
     private:
         protobuf::Service*  _service;
         ProtobufCodec       _codec;
+        std::unordered_map<const protobuf::Descriptor*, std::string>  _methods;   //! message desc to method_name
 };
 
 class RpcChannel : public protobuf::RpcChannel
