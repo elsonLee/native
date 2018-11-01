@@ -108,7 +108,11 @@ Connector::handleConnectingEvent ()
 
     _channel->disableAllEvent();
     int sockfd = _channel->fd();
-    _channel.reset(nullptr);
+
+    //! the function is called by channel->handleEvents, so channel cannot be destructed here,
+    //  delay later, and channel shouldn't unregister event because sockfd is still used by TcpConnection
+    _channel->removeFromLoop();
+    _loop->queueInLoop([this]{ _channel.reset(nullptr); });
 
     int err = sockops::getSocketError(sockfd);
     if (err) {
