@@ -42,12 +42,13 @@ ProtobufCodec::recvMessage (const std::shared_ptr<TcpConnection>& connPtr, Buffe
             protobuf::Message* message = createMessageByTypeName(type_name);
             assert(message);
             std::unique_ptr<protobuf::Message> messagePtr(message);
+            size_t data_len = len-name_len-sizeof(int32_t);
             bool parseStatus = parseFromSlice(
-                    Slice(buf.peek(), len-name_len-sizeof(int32_t)), messagePtr.get());
+                    Slice(buf.peek(), data_len), messagePtr.get());
             if (parseStatus) {
                 assert(_message_cb);
                 _message_cb(connPtr, std::move(messagePtr));
-                buf.retrieve(kHeaderLen + len);
+                buf.readSize(data_len);
             } else {
                 std::cerr << "[ProtobufCodec] parse error" << std::endl;
                 break;
