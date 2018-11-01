@@ -1,7 +1,16 @@
 #pragma once
 
+#include <unistd.h>
 #include <iostream>
 #include <cassert>
+
+namespace google
+{
+    namespace protobuf
+    {
+        class Message;
+    }
+}
 
 class FileDescriptor
 {
@@ -21,3 +30,13 @@ class FileDescriptor
     private:
         int     _fd;
 };
+
+namespace utility
+{
+
+
+google::protobuf::Message*
+createMessageByTypeName (const std::string& type_name);
+
+
+}

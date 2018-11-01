@@ -30,6 +30,7 @@ set(SOURCES
     TcpServer.cpp
     Timer.cpp
     TimerQueue.cpp
+    Utility.cpp
     )
 
 add_library(network ${SOURCES})
