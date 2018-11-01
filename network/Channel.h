@@ -10,7 +10,7 @@ class Channel
     public:
         using CallbackFn = std::function<void()>;
 
-        Channel (const std::string& name, int fd, EventLoop* event_loop);
+        Channel (const std::string& name, int fd, EventLoop* loop);
         ~Channel ();
 
         Channel (const Channel&) = delete;
@@ -22,6 +22,8 @@ class Channel
         void setRevents (int revents) { _revents = revents; }
 
         void handleEvent ();
+    
+        void removeFromLoop();
 
         void setReadCallback  (const CallbackFn& read_cb)  { _read_cb  = read_cb; }
         void setWriteCallback (const CallbackFn& write_cb) { _write_cb = write_cb; }
@@ -44,7 +46,7 @@ class Channel
 
         const std::string _name;
         const int         _fd;
-        EventLoop*        _event_loop;
+        EventLoop*        _loop;
         int               _events;
         int               _revents;
 
