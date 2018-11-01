@@ -1,0 +1,27 @@
+syntax = "proto2";
+
+//! deprecated
+option cc_generic_services = true;
+
+package testcase;
+
+message RequestSum {
+    repeated int32 num = 1;
+}
+
+message RequestMul {
+    repeated int32 num = 1;
+}
+
+message ReplySum {
+    optional int32 result = 1 [default = 0];
+}
+
+message ReplyMul {
+    optional int32 result = 1 [default = 0];
+}
+
+service CalculationService {
+    rpc SolveSum (RequestSum) returns (ReplySum);
+    rpc SolveMul (RequestMul) returns (ReplyMul);
+}
