@@ -12,6 +12,7 @@ using namespace google;
 class ProtobufCodec
 {
     public:
+
         constexpr static size_t kHeaderLen = sizeof(int32_t);
 
         using ProtoMessageCallback = std::function<void(
@@ -24,19 +25,21 @@ class ProtobufCodec
 
         ~ProtobufCodec () = default;
 
-        ProtobufCodec (const ProtobufCodec&) = delete;
-        ProtobufCodec& operator= (const ProtobufCodec&) = delete;
-
         void recvMessage (const std::shared_ptr<TcpConnection>&, Buffer&);
 
         void sendMessage (const std::shared_ptr<TcpConnection>&, const protobuf::Message&);
 
     private:
+
+        ProtobufCodec (const ProtobufCodec&) = delete;
+
+        ProtobufCodec& operator= (const ProtobufCodec&) = delete;
+
+    private:
+
         bool parseFromSlice (const Slice& slice, protobuf::Message* message);
 
         size_t serializeToBuffer (Buffer& buf, const protobuf::Message& message); 
-
-        protobuf::Message* createMessageByTypeName (const std::string& type_name);
 
     private:
 

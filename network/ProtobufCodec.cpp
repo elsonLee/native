@@ -2,6 +2,7 @@
 
 #include "ProtobufCodec.h"
 #include "SocketOps.h"
+#include "Utility.h"
 #include <cassert>
 
 //! message format
@@ -9,25 +10,6 @@
 //  int32_t name_len
 //  char    typename[name_len]
 //  char    protobuf_data[len-name_len-sizeof(name_len)]
-
-protobuf::Message*
-ProtobufCodec::createMessageByTypeName (const std::string& type_name)
-{
-    protobuf::Message* message = nullptr;
-    const auto desc = protobuf::DescriptorPool::generated_pool()->FindMessageTypeByName(type_name);
-    if (desc) {
-        const auto prototype = protobuf::MessageFactory::generated_factory()->GetPrototype(desc);
-        if (prototype) {
-            message = prototype->New();
-        } else {
-            std::cerr << "prototype is not found for typename " << type_name << std::endl;
-        }
-    } else {
-        std::cerr << "typename " << type_name << "is not a valide message typename!" << std::endl;
-    }
-
-    return message;
-}
 
 void
 ProtobufCodec::recvMessage (const std::shared_ptr<TcpConnection>& connPtr, Buffer& buf)
@@ -39,7 +21,7 @@ ProtobufCodec::recvMessage (const std::shared_ptr<TcpConnection>& connPtr, Buffe
             buf.readSize(kHeaderLen);
             const int32_t name_len = buf.readInt32();
             std::string type_name = buf.readString(name_len);
-            protobuf::Message* message = createMessageByTypeName(type_name);
+            protobuf::Message* message = utility::createMessageByTypeName(type_name);
             assert(message);
             std::unique_ptr<protobuf::Message> messagePtr(message);
             size_t data_len = len-name_len-sizeof(int32_t);
