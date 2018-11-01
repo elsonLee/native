@@ -45,8 +45,7 @@ class Client : public TcpClient
     public:
         Client (const std::string& name, EventLoop* loop, const InetAddress& server_addr) :
             TcpClient(name, loop, server_addr),
-            _codec(&AddressBook::default_instance(),
-                   [this](const std::shared_ptr<TcpConnection>& connPtr,
+            _codec([this](const std::shared_ptr<TcpConnection>& connPtr,
                           std::unique_ptr<protobuf::Message> message)
                    { onMessage(connPtr, std::move(message)); })
         {
@@ -82,8 +81,7 @@ class Server : public TcpServer
     public:
         Server (const std::string& name, EventLoop* loop, const InetAddress& listen_addr) :
             TcpServer(name, loop, listen_addr),
-            _codec(&AddressBook::default_instance(),
-                   [this](const std::shared_ptr<TcpConnection>& connPtr,
+            _codec([this](const std::shared_ptr<TcpConnection>& connPtr,
                           std::unique_ptr<protobuf::Message> message)
                    { onMessage(connPtr, std::move(message)); })
         {
