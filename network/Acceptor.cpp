@@ -19,7 +19,7 @@ Acceptor::Acceptor (EventLoop* loop, const InetAddress& listen_addr) :
 Acceptor::~Acceptor ()
 {
     _channel.disableAllEvent();
-    // _channel will be removed automatically in ~Channel()
+    _channel.removeFromLoop();
 }
 
 void
@@ -27,7 +27,7 @@ Acceptor::listen ()
 {
     _loop->assertInLoopThread();
     _listening = true;
-    //std::cout << "[Acceptor] listen @" << _listen_addr.toPort() << " ..." << std::endl;
+    //std::cout << "[acceptor] listen @" << _listen_addr.toPort() << " ..." << std::endl;
     _socket.listen();
     _channel.enableReadEvent();
 }
@@ -35,7 +35,7 @@ Acceptor::listen ()
 void
 Acceptor::handleAcceptEvent ()
 {
-    //std::cout << "[Acceptor] handleAcceptEvent" << std::endl;
+    //std::cout << "[acceptor] handleAcceptEvent" << std::endl;
     _loop->assertInLoopThread();
     InetAddress peer_addr;
     int peer_fd = _socket.accept(&peer_addr);
