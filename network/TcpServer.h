@@ -15,24 +15,37 @@ class Acceptor;
 class TcpServer
 {
     public:
+
         using ConnectCallback    = std::function<void(const std::shared_ptr<TcpConnection>&)>;
+
         using DisconnectCallback = std::function<void(const std::shared_ptr<TcpConnection>&)>;
+
         using MessageCallback    = std::function<void(const std::shared_ptr<TcpConnection>&, Buffer&)>;
 
         TcpServer (const std::string& name, EventLoop* loop, const InetAddress& listen_addr);
+
         ~TcpServer () = default;
 
         void start ();
 
         void setConnectCallback (const ConnectCallback& cb) { _connect_cb = cb; }
+
         void setDisconnectCallback (const DisconnectCallback& cb) { _disconnect_cb = cb; }
+
         void setMessageCallback (const MessageCallback& cb) { _message_cb = cb; }
 
     private:
+
+        void listen ();
+
+        void listenInLoop();
+
         void handleNewConnectionEvent (int peer_fd, const InetAddress& peer_addr);
+
         void removeConnection (const std::shared_ptr<TcpConnection>& conn);
 
     private:
+
         const std::string           _name;
         EventLoop*                  _loop;
         Acceptor                    _acceptor;

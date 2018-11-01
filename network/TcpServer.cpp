@@ -18,22 +18,37 @@ TcpServer::TcpServer (const std::string& name, EventLoop* loop, const InetAddres
     _disconnect_cb(nullptr),
     _message_cb(nullptr)
 {
-
-}
-
-
-void
-TcpServer::start ()
-{
     _acceptor.setConnectionCallback(
             [this](int sockfd, const InetAddress& peer_addr)
                   {
                      handleNewConnectionEvent(sockfd, peer_addr);
                   }
             );
-    _acceptor.listen();
 }
 
+void
+TcpServer::start ()
+{
+    listen();
+}
+
+void
+TcpServer::listen ()
+{
+    if (_loop->isInLoopThread()) {
+        listenInLoop();
+    } else {
+        _loop->runInLoop([this]{ listenInLoop(); });
+
+    }
+}
+
+void
+TcpServer::listenInLoop ()
+{
+    _loop->assertInLoopThread();
+    _acceptor.listen();
+}
 
 //! NOTE: peer_fd will be closed after the connection dtor
 void
