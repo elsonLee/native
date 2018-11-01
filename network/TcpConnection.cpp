@@ -13,7 +13,7 @@ TcpConnection::TcpConnection (EventLoop* loop, const std::string& name, int sock
     _loop(loop),
     _name(name),
     _socket(Socket(sockfd)),    // sockfd will be closed in dtor
-    _channel("connection", sockfd, loop),
+    _channel(_name, sockfd, loop),
     _local_addr(local_addr),
     _peer_addr(peer_addr),
     _state(State::kConnecting)
@@ -27,6 +27,7 @@ TcpConnection::TcpConnection (EventLoop* loop, const std::string& name, int sock
 TcpConnection::~TcpConnection ()
 {
     _channel.disableAllEvent();
+    _channel.removeFromLoop();
     //std::cout << "[TcpConnection#" << _name << "] dtor" << std::endl;
 }
 
@@ -36,7 +37,7 @@ TcpConnection::handleReadEvent ()
     int error = 0;
     int n = _input_buffer.readFd(_channel.fd(), error);
     if (n > 0) {
-        //std::cout << "[TcpConnection] handleRead " << n << " Bytes" << std::endl;
+        //std::cout << "[tcpconn#" << _name << "] recv " << n << " Bytes" << std::endl;
         assert(_message_cb);
         _message_cb(shared_from_this(), _input_buffer);
     } else if (n == 0) {    // received FIN
@@ -122,8 +123,10 @@ TcpConnection::sendInLoop (const Slice& slice)
     if (!_channel.isWriteEventOn() && _output_buffer.readableBytes() == 0) {
         nwrote = ::write(_channel.fd(), slice.data(), slice.size());
         if (nwrote >= 0) {
+            //std::cout << "[tcpconn#" << _name << "] send " << nwrote <<
+            //  " Bytes, remain " << slice.size() - nwrote << " Bytes to send" << std::endl;
             if ((size_t)nwrote < slice.size()) {
-                //std::cout << "remain " << message.size() - nwrote << " bytes to send" << std::endl;
+                //std::cout << "remain " << slice.size() - nwrote << " bytes to send" << std::endl;
             }
         } else {
             nwrote = 0;
@@ -142,9 +145,6 @@ TcpConnection::sendInLoop (const Slice& slice)
             _channel.enableWriteEvent();
         }
     }
-
-    //std::cout << "send " << nwrote << " Bytes" << std::endl;
-    std::cout << "[TcpConnection] send " << slice.size() << " Bytes" << std::endl;
 }
 
 void
