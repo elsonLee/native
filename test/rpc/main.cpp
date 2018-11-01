@@ -12,8 +12,8 @@ class SumServiceImpl : public testcase::SumService {
         void Solve (protobuf::RpcController* controller,
                     const testcase::Request* request,
                     testcase::Reply* response,
-                    protobuf::Closure* done) override {
-
+                    protobuf::Closure* done) override
+        {
             int32_t sum = 0;
             for (int i = 0; i < request->num_size(); i++) {
                 sum += request->num(i);
@@ -23,21 +23,28 @@ class SumServiceImpl : public testcase::SumService {
         }
 };
 
-class RpcServer : public TcpServer {
+class RpcServer : public TcpServer
+{
     public:
-        RpcServer (EventLoop* loop, const InetAddress& listen_addr, protobuf::Service* service) :
-            TcpServer("rpcserver", loop, listen_addr),
-            _service(service),
-            _codec([this](const std::shared_ptr<TcpConnection>& connPtr,
-                          std::unique_ptr<protobuf::Message> message) { onProtoMessage(connPtr, std::move(message)); })
-        {
-            setConnectCallback([this](const std::shared_ptr<TcpConnection>& connPtr){ onConnect(connPtr); });
-            setMessageCallback([this](const std::shared_ptr<TcpConnection>& connPtr, Buffer& buf){
-                        _codec.recvMessage(connPtr, buf);
-                    });
-        }
+        RpcServer (EventLoop* loop, const InetAddress& listen_addr, protobuf::Service* service)
+            : TcpServer("rpcserver", loop, listen_addr),
+              _service(service),
+              _codec([this](const std::shared_ptr<TcpConnection>& connPtr,
+                        std::unique_ptr<protobuf::Message> message)
+                      {
+                        onProtoMessage(connPtr, std::move(message));
+                      })
+            {
+                setConnectCallback([this](const std::shared_ptr<TcpConnection>& connPtr)
+                        { onConnect(connPtr); });
+                setMessageCallback([this](const std::shared_ptr<TcpConnection>& connPtr, Buffer& buf)
+                        {
+                          _codec.recvMessage(connPtr, buf);
+                        });
+            }
 
-        void onConnect (const std::shared_ptr<TcpConnection>& connPtr) {
+        void onConnect (const std::shared_ptr<TcpConnection>& connPtr)
+        {
             std::cout << "[rpcserver] onConnect" << std::endl;
             // TODO
             //setMessageCallback([this](const std::shared_ptr<TcpConnection>& connPtr, Buffer& buf){
@@ -46,7 +53,8 @@ class RpcServer : public TcpServer {
         }
 
         void onProtoMessage (const std::shared_ptr<TcpConnection>& connPtr,
-                             std::unique_ptr<protobuf::Message> message) {
+                std::unique_ptr<protobuf::Message> message)
+        {
 
             std::cout << "[rpcserver] onProtoMessage" << std::endl;
             const auto desc = _service->GetDescriptor();
@@ -54,12 +62,13 @@ class RpcServer : public TcpServer {
             assert(method);
             testcase::Reply reply;
             _service->CallMethod(method, nullptr, message.get(), &reply, nullptr);
-                    //protobuf::NewCallback(this, &RpcServer::doneProtoMessage, connPtr, &reply));
+            //protobuf::NewCallback(this, &RpcServer::doneProtoMessage, connPtr, &reply));
             doneProtoMessage(connPtr, reply);   // FIXME
         }
 
         void doneProtoMessage (const std::shared_ptr<TcpConnection>& connPtr,
-                               protobuf::Message& response) {
+                protobuf::Message& response)
+        {
             std::cout << "[rpcserver] doneProtoMessage" << std::endl;
             _codec.sendMessage(connPtr, response);
         }
@@ -69,25 +78,27 @@ class RpcServer : public TcpServer {
         ProtobufCodec       _codec;
 };
 
-class RpcChannel : public protobuf::RpcChannel {
+class RpcChannel : public protobuf::RpcChannel
+{
     public:
-        RpcChannel (const std::shared_ptr<TcpConnection>& connPtr) :
-            _connPtr(connPtr),
-            _codec([this](const std::shared_ptr<TcpConnection>& connPtr,
-                          std::unique_ptr<protobuf::Message> message)
-                   {
+        RpcChannel (const std::shared_ptr<TcpConnection>& connPtr)
+            : _connPtr(connPtr),
+              _codec([this](const std::shared_ptr<TcpConnection>& connPtr,
+                        std::unique_ptr<protobuf::Message> message)
+                    {
                         assert(connPtr == _connPtr);
                         onProtoMessage(connPtr, std::move(message));
-                   })
-            {}
+                    })
+        {}
 
-        void onMessage (const std::shared_ptr<TcpConnection>& connPtr, Buffer& buf) {
+        void onMessage (const std::shared_ptr<TcpConnection>& connPtr, Buffer& buf)
+        {
             std::cout << "[rpclient] onMessage" << std::endl;
             _codec.recvMessage(connPtr, buf);
         }
 
         void onProtoMessage (const std::shared_ptr<TcpConnection>& connPtr,
-                             std::unique_ptr<protobuf::Message> messagePtr)
+                std::unique_ptr<protobuf::Message> messagePtr)
         {
             std::cout << "[rpclient] onProtoMessage" << std::endl;
             // FIXME
@@ -99,10 +110,10 @@ class RpcChannel : public protobuf::RpcChannel {
         }
 
         void CallMethod (const protobuf::MethodDescriptor* method,
-                         protobuf::RpcController* controller,
-                         const protobuf::Message* request,
-                         protobuf::Message* response,
-                         protobuf::Closure* done) override
+                protobuf::RpcController* controller,
+                const protobuf::Message* request,
+                protobuf::Message* response,
+                protobuf::Closure* done) override
         {
             _record = {response, done};
             _codec.sendMessage(_connPtr, *request);
@@ -113,15 +124,17 @@ class RpcChannel : public protobuf::RpcChannel {
         std::tuple<protobuf::Message*, protobuf::Closure*> _record;
 };
 
-class RpcClient : public TcpClient {
+class RpcClient : public TcpClient
+{
     public:
         RpcClient (EventLoop* loop, const InetAddress& server_addr) :
             TcpClient("rpclient", loop, server_addr)
-        {
-            setConnectCallback([this](const std::shared_ptr<TcpConnection>& connPtr){ onConnect(connPtr); });
-        }
+    {
+        setConnectCallback([this](const std::shared_ptr<TcpConnection>& connPtr){ onConnect(connPtr); });
+    }
 
-        void onConnect (const std::shared_ptr<TcpConnection>& connPtr) {
+        void onConnect (const std::shared_ptr<TcpConnection>& connPtr)
+        {
             std::cout << "[rpclient] onConnect" << std::endl;
             auto chanPtr = std::make_unique<RpcChannel>(connPtr);
             // FIXME:
@@ -136,7 +149,8 @@ class RpcClient : public TcpClient {
         std::promise<std::unique_ptr<RpcChannel>> _promise;
 };
 
-void handleReply (testcase::Reply* reply) {
+void handleReply (testcase::Reply* reply)
+{
     assert(reply);
     std::cout << "Sum: " << reply->sum() << std::endl;
 }

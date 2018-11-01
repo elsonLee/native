@@ -3,3 +3,4 @@ link_directories(../network/lib)
 
 add_subdirectory(echo)
 add_subdirectory(protocodec)
+add_subdirectory(rpc)
