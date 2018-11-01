@@ -41,6 +41,10 @@ EventLoop::EventLoop () :
 
 EventLoop::~EventLoop ()
 {
+    if (_wakeup_channel) {
+        _wakeup_channel->removeFromLoop();
+    }
+
     assert(!_is_running.load());
     t_loopInThisThread = nullptr;
 }
