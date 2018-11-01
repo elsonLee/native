@@ -23,6 +23,8 @@ set(SOURCES
     Poller.cpp
     ProtobufCodec.cpp
     ProtobufDispatcher.cpp
+    RpcChannel.cpp
+    RpcClient.cpp
     RpcServer.cpp
     Socket.cpp
     SocketOps.cpp
@@ -51,6 +53,8 @@ set(HEADERS
     Poller.h
     ProtobufCodec.h
     ProtobufDispatcher.h
+    RpcChannel.h
+    RpcClient.h
     RpcServer.h
     Slice.h
     Socket.h

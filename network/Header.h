@@ -11,6 +11,7 @@
 #include "Poller.h"
 #include "ProtobufCodec.h"
 #include "ProtobufDispatcher.h"
+#include "RpcClient.h"
 #include "RpcServer.h"
 #include "Socket.h"
 #include "SocketOps.h"
