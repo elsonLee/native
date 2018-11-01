@@ -52,7 +52,7 @@ class RpcServer : public TcpServer
                         { onConnect(connPtr); });
                 setMessageCallback([this](const std::shared_ptr<TcpConnection>& connPtr, Buffer& buf)
                         {
-                          _codec.recvMessage(connPtr, buf);
+                            _codec.recvMessage(connPtr, buf);
                         });
 
                 assert(service);
@@ -101,7 +101,6 @@ class RpcServer : public TcpServer
         void onProtoMessage (const std::shared_ptr<TcpConnection>& connPtr,
                 std::unique_ptr<protobuf::Message> message)
         {
-
             std::cout << "[rpcserver] onProtoMessage" << std::endl;
             const auto desc = _service->GetDescriptor();
             auto iter = _methods.find(message->GetDescriptor());
