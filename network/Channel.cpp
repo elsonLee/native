@@ -8,20 +8,32 @@ constexpr int kNoneEvent = 0;
 constexpr int kReadEvent = EPOLLIN | EPOLLPRI;
 constexpr int kWriteEvent = EPOLLOUT;
 
-Channel::Channel (const std::string& name, int fd, EventLoop* event_loop) :
+Channel::Channel (const std::string& name, int fd, EventLoop* loop) :
     _name(name),
     _fd(fd),
-    _event_loop(event_loop),
-    _events(kNoneEvent), _revents(kNoneEvent)
+    _loop(loop),
+    _events(kNoneEvent), _revents(kNoneEvent),
+    _read_cb(nullptr),
+    _write_cb(nullptr),
+    _close_cb(nullptr),
+    _error_cb(nullptr)
 {
-    //std::cout << "[Channel: " << _name << "] create " << _fd << std::endl;
+    //std::cout << "[channel: " << _name << "] create " << _fd << std::endl;
 }
 
 Channel::~Channel ()
 {
-    if (_event_loop) {
-        //std::cout << "[Channel: " << _name << "] delete " << _fd << std::endl;
-        _event_loop->removeChannel(this);
+    //! cannot remove here, because sockfd can be used by other component
+    //  removeFromLoop();
+}
+
+void
+Channel::removeFromLoop ()
+{
+    _loop->assertInLoopThread();
+    if (_loop) {
+        std::cout << "[channel: " << _name << "] remove " << _fd << " this: " << this << std::endl;
+        _loop->removeChannel(this);
     }
 }
 
@@ -86,7 +98,7 @@ Channel::disableAllEvent ()
 bool
 Channel::update ()
 {
-    return _event_loop->updateChannel(this);
+    return _loop->updateChannel(this);
 }
 
 void
@@ -95,7 +107,11 @@ Channel::handleEvent ()
     // TODO: ????
     if ((_revents & EPOLLHUP) && !(_revents & EPOLLIN)) {
         std::cout << "warning: EPOLLHUP" << std::endl;
-        if (_close_cb) { _close_cb(); }
+        if (_close_cb) {
+            _close_cb();
+        } else {
+            std::cout << "[chan:" << _name << "] closeCallback is not set!" << std::endl;
+        }
     }
 
     // accept conn available -> EPOLLIN
@@ -107,6 +123,8 @@ Channel::handleEvent ()
     if (_revents & (EPOLLIN | EPOLLPRI | EPOLLRDHUP)) {
         if (_read_cb) {
             _read_cb();
+        } else {
+            std::cout << "[chan:" << _name << "] readCallback is not set!" << std::endl;
         }
     }
 
@@ -114,10 +132,16 @@ Channel::handleEvent ()
     if (_revents & EPOLLOUT) {
         if (_write_cb) {
             _write_cb();
+        } else {
+            std::cout << "[chan:" << _name << "] writeCallback is not set!" << std::endl;
         }
     }
 
     if (_revents & EPOLLERR) {
-        if (_error_cb) { _error_cb(); }
+        if (_error_cb) {
+            _error_cb();
+        } else {
+            std::cout << "[chan:" << _name << "] errorCallback is not set!" << std::endl;
+        }
     }
 }
