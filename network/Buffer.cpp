@@ -29,7 +29,7 @@ int16_t
 Buffer::readInt16 ()
 {
     int16_t ret = peekInt16();
-    _read_pos += sizeof(ret);
+    readSize(sizeof(ret));
     return ret;
 }
 
@@ -46,7 +46,7 @@ int32_t
 Buffer::readInt32 ()
 {
     int32_t ret = peekInt32();
-    _read_pos += sizeof(ret);
+    readSize(sizeof(ret));
     return ret;
 }
 
@@ -63,7 +63,15 @@ int64_t
 Buffer::readInt64 ()
 {
     int64_t ret = peekInt64();
-    _read_pos += sizeof(ret);
+    readSize(sizeof(ret));
+    return ret;
+}
+
+std::string
+Buffer::readString (size_t len)
+{
+    std::string ret(peek(), len);
+    readSize(len);
     return ret;
 }
 
@@ -114,11 +122,30 @@ Buffer::ensureWriteableBytes (size_t len)
 }
 
 void
+Buffer::appendWithoutSpaceEnsurance (const void* data, size_t len)
+{
+    assert(_write_pos + len <= _buf.size());
+    ::memcpy(_buf.data() + _write_pos, data, len);
+    writeSize(len);
+}
+
+void
 Buffer::append (const void* data, size_t len)
 {
     ensureWriteableBytes(len);
-    ::memcpy(_buf.data() + _write_pos, data, len);
-    writeSize(len);
+    appendWithoutSpaceEnsurance(data, len);
+}
+
+void
+Buffer::appendChar (char data)
+{
+    append(&data, sizeof(char));
+}
+
+void
+Buffer::appendString (const std::string& str)
+{
+    append(str.data(), str.length());
 }
 
 void

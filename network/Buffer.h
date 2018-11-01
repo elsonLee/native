@@ -26,6 +26,11 @@ class Buffer
             _write_pos += len;
         }
 
+        void readSize (size_t len) {
+            assert(_read_pos + len <= _write_pos);
+            _read_pos += len;
+        }
+
         int16_t peekInt16 () const;
 
         int16_t readInt16 ();
@@ -38,6 +43,8 @@ class Buffer
 
         int64_t readInt64 ();
 
+        std::string readString (size_t len);
+
         int retrieve (void* data, int size);
 
         int retrieve (int size) { return retrieve(nullptr, size); }
@@ -46,9 +53,15 @@ class Buffer
 
         void ensureWriteableBytes (size_t len);
 
+        void appendWithoutSpaceEnsurance (const void* data, size_t len);
+
         void append (const void* data, size_t len);
 
         void appendInt32 (int32_t data);
+
+        void appendChar (char data);
+
+        void appendString (const std::string& data);
 
         int readFd (int fd, int& error);
 
