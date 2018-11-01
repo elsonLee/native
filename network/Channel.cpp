@@ -32,7 +32,8 @@ Channel::removeFromLoop ()
 {
     _loop->assertInLoopThread();
     if (_loop) {
-        std::cout << "[channel: " << _name << "] remove " << _fd << " this: " << this << std::endl;
+        //std::cout << "[channel: " << _name << "] remove " << _fd `
+        //<< " this: " << this << std::endl;
         _loop->removeChannel(this);
     }
 }
