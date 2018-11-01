@@ -70,6 +70,7 @@ TimerQueue::TimerQueue (EventLoop* loop) :
 TimerQueue::~TimerQueue ()
 {
     _timersChannel.disableAllEvent();
+    _timersChannel.removeFromLoop();
 }
 
 void
