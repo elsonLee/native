@@ -1,1 +1,2 @@
-library written in C/C++
+some native library written in C/C++
+network
