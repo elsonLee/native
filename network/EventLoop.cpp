@@ -144,7 +144,7 @@ EventLoop::run ()
     while (!_quit.load())
     {
         triggered_channels.clear();
-        _poller->poll(2000, triggered_channels);
+        _poller->poll(2000, triggered_channels);    // 2s
         for (auto&& ch : triggered_channels) {
             ch->handleEvent();
         }

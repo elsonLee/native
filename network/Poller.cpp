@@ -11,7 +11,9 @@
 
 Poller::Poller ()
 {
-    _fd = epoll_create1(0);
+    // NOTE: When all file descriptors referring to an epoll instance have been closed,
+    // the kernel destroys the instance and releases the associated resources for reuse.
+    _fd = epoll_create1(0);     // won't do exec
     if (_fd < 0) {
         std::cerr << "epoll create failed" << std::endl;
     }
@@ -27,24 +29,41 @@ Poller::~Poller ()
 
 
 bool
+Poller::createOrChangeEvent (int op, int event_fd, uint32_t events)
+{
+    assert(event_fd >= 0);
+
+    struct epoll_event ev;
+    bzero(&ev, sizeof(ev));
+    ev.events = events;
+    ev.data.fd = event_fd;
+
+    return epoll_ctl(_fd, op, event_fd, &ev) == 0;
+}
+
+
+bool
+Poller::removeEvent (int event_fd) {
+    assert(event_fd >= 0);
+
+    struct epoll_event ev;
+
+    return epoll_ctl(_fd, EPOLL_CTL_DEL, event_fd, &ev) == 0;
+}
+
+
+bool
 Poller::registerChannel (const Channel* ch)
 {
     assert(ch);
     assert(_fd >= 0);
 
-    bool ret = false;
-
-    struct epoll_event ev;
-    bzero(&ev, sizeof(ev));
-    ev.events = ch->events();
-    ev.data.fd = ch->fd();
-
-    int status = epoll_ctl(_fd, EPOLL_CTL_ADD, ch->fd(), &ev);
-    if (!status) {
-        ret = true;
-        //std::cout << "[Poller] registerChannel succ: " << ch->name() << std::endl;
+    bool ret = createOrChangeEvent(EPOLL_CTL_ADD, ch->fd(), ch->events());
+    if (!ret) {
+        std::cerr << "[Poller] registerChannel failed: " << ch->name() <<
+            " : " << strerror(errno) << std::endl;
     } else {
-        std::cerr << "[Poller] registerChannel failed: " << ch->name() << std::endl;
+        //std::cout << "[Poller] registerChannel succ: " << ch->name() << std::endl;
     }
 
     return ret;
@@ -57,18 +76,12 @@ Poller::modifyChannel (const Channel* ch)
     assert(ch);
     assert(_fd >= 0);
 
-    bool ret = false;
-
-    struct epoll_event ev;
-    bzero(&ev, sizeof(ev));
-    ev.events = ch->events();
-    ev.data.fd = ch->fd();
-
-    int status = epoll_ctl(_fd, EPOLL_CTL_MOD, ch->fd(), &ev);
-    if (!status) {
-        ret = true;
+    bool ret = createOrChangeEvent(EPOLL_CTL_MOD, ch->fd(), ch->events());
+    if (!ret) {
+        std::cerr << "[Poller] modifyChannel failed" << ch->name() <<
+            " : " << strerror(errno) << std::endl;
     } else {
-        std::cerr << "modifyChannel failed" << std::endl;
+        //std::cout << "[Poller] registerChannel succ: " << ch->name() << std::endl;
     }
 
     return ret;
@@ -81,17 +94,14 @@ Poller::unregisterChannel (const Channel* ch)
     assert(ch);
     assert(_fd >= 0);
 
-    bool ret = false;
-
     struct epoll_event ev;
 
-    int status = epoll_ctl(_fd, EPOLL_CTL_DEL, ch->fd(), &ev);
-    if (!status) {
-        ret = true;
-        //std::cout << "[Poller] unregisterChannel succ: " << ch->name() << std::endl;
-    } else {
+    bool ret = removeEvent(ch->fd());
+    if (!ret) {
         std::cerr << "[Poller] unregisterChannel failed: " << ch->name() <<
             " : " << strerror(errno) << std::endl;
+    } else {
+        //std::cout << "[Poller] unregisterChannel succ: " << ch->name() << std::endl;
     }
 
     return ret;
@@ -141,7 +151,6 @@ Poller::poll (int timeout_in_mills, std::vector<Channel*>& triggered_channels)
     std::vector<struct epoll_event> revents(max_num_events);
     int num_events = epoll_wait(_fd, &*revents.begin(), _channel_map.size(), timeout_in_mills);
     if (num_events > 0) {
-        //std::cout << num_events << std::endl;
         for (int i = 0; i < num_events; i++)
         {
             auto ev = revents[i];
@@ -160,7 +169,8 @@ Poller::poll (int timeout_in_mills, std::vector<Channel*>& triggered_channels)
     else {
         if (errno == EINTR) {
             // timeout
-        } else {
+        } 
+        else {
             //std::cerr << "poll error: " << strerror(errno) << std::endl;
             fprintf(stderr, "poll error[ret:%d, max:%lu]: %s\n",
                     num_events, _channel_map.size(), strerror(errno));
