@@ -16,6 +16,7 @@ class TcpConnection;
 class TcpClient
 {
     public:
+
         using ConnectCallback       = std::function<void(const std::shared_ptr<TcpConnection>&)>;
         using DisconnectCallback    = std::function<void(const std::shared_ptr<TcpConnection>&)>;
         using WriteCompleteCallback = std::function<void(const std::shared_ptr<TcpConnection>&)>;

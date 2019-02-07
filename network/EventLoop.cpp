@@ -143,7 +143,7 @@ EventLoop::run ()
     std::vector<Channel*> triggered_channels;
     while (!_quit.load())
     {
-        triggered_channels.clear();
+        triggered_channels.clear();                 // not free memory
         _poller->poll(2000, triggered_channels);    // 2s
         for (auto&& ch : triggered_channels) {
             ch->handleEvent();

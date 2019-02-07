@@ -5,6 +5,7 @@ class InetAddress;
 class Socket
 {
     public:
+
         explicit Socket (int sockfd) :
             _sockfd(sockfd)
         {}
@@ -14,6 +15,7 @@ class Socket
         int fd() const { return _sockfd; }
 
         void bindAddress (const InetAddress& addr);
+
         void listen (void);
 
         int accept (InetAddress* addr);
@@ -22,8 +24,10 @@ class Socket
 
         void setReuseAddr (bool on);
         //void setReusePort (bool on);
+        
+        void setTcpNoDelay (bool on);
 
     private:
-        const int _sockfd;
 
+        const int _sockfd;
 };

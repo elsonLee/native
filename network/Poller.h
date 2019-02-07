@@ -32,7 +32,7 @@ class Poller
 
         bool unregisterChannel (const Channel* ch);
 
-        int _fdm
+        int _fd;
 
         std::unordered_map<int, Channel*> _channel_map;
 };

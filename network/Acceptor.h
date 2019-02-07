@@ -8,10 +8,13 @@
 class Acceptor
 {
     public:
+
         using ConnectionCallback = std::function<void(int sock_fd, const InetAddress&)>;
 
         Acceptor (EventLoop* loop, const InetAddress& listen_addr);
+
         Acceptor (const Acceptor&) = delete;
+
         Acceptor& operator= (const Acceptor&) = delete;
 
         ~Acceptor ();
@@ -24,14 +27,20 @@ class Acceptor
         }
 
     private:
+
         void handleAcceptEvent();
 
     private:
+
         EventLoop*          _loop;
+
         InetAddress         _listen_addr;
+
         Socket              _socket;        // FIXME
+
         Channel             _channel;
+
         bool                _listening;
 
-        ConnectionCallback  _connection_cb;
+        ConnectionCallback  _connection_cb;     // new connection arrived
 };

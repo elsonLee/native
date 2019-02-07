@@ -47,13 +47,19 @@ class TcpServer
     private:
 
         const std::string           _name;
+
         EventLoop*                  _loop;
+
         Acceptor                    _acceptor;
+
         bool                        _started;
+
         int                         _next_conn_id;
 
         ConnectCallback             _connect_cb;
+
         DisconnectCallback          _disconnect_cb;
+
         MessageCallback             _message_cb;
 
         // TcpConnection is responsible for data reading/writing, its life time

@@ -39,7 +39,6 @@ TcpServer::listen ()
         listenInLoop();
     } else {
         _loop->runInLoop([this]{ listenInLoop(); });
-
     }
 }
 

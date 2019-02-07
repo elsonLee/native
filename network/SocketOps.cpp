@@ -2,6 +2,7 @@
 #include "Utility.h"
 #include "SocketOps.h"
 #include <unistd.h>
+#include <thread>
 
 // ipv4
 namespace sockops
@@ -66,6 +67,7 @@ listen (int sockfd)
     //  if the backlog argument is greater than the value
     //  in /proc/sys/net/core/somaxconn, it is silently
     //  truncated to that value, default is 128
+    std::cout << std::this_thread::get_id() << " :listen" << std::endl;
     int ret = ::listen(sockfd, SOMAXCONN);
     if (ret < 0) {
         switch (errno) {
@@ -89,6 +91,7 @@ accept (int sockfd, struct sockaddr_in* addr)
     socklen_t addrlen = static_cast<socklen_t>(sizeof(*addr));
     //! NOTE:
     //  return NON-BLOCK socket_fd directly, or use fcntl
+    std::cout << std::this_thread::get_id() << " :accept" << std::endl;
     int connfd = ::accept4(sockfd, static_cast<struct sockaddr*>((void*)addr),
                            &addrlen , SOCK_NONBLOCK | SOCK_CLOEXEC);
     if (connfd < 0)
@@ -124,12 +127,14 @@ accept (int sockfd, struct sockaddr_in* addr)
 int
 connect (int sockfd, const struct sockaddr* addr)
 {
+    std::cout << std::this_thread::get_id() << " :connect" << std::endl;
     return ::connect(sockfd, addr, static_cast<socklen_t>(sizeof(struct sockaddr_in6)));
 }
 
 void
 shutdownWrite (int sockfd)
 {
+    std::cout << std::this_thread::get_id() << " :shutdown" << std::endl;
     int ret = ::shutdown(sockfd, SHUT_WR);
     if (ret < 0) {
         std::cerr << "socket shutdownWrite failed" << std::endl;
@@ -139,6 +144,7 @@ shutdownWrite (int sockfd)
 void
 close (int sockfd)
 {
+    std::cout << std::this_thread::get_id() << " :close" << std::endl;
     if (::close(sockfd) < 0) {
         std::cerr << "socket close failed" << std::endl;
     }

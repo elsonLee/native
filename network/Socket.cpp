@@ -4,6 +4,8 @@
 
 #include "Socket.h"
 
+#include <netinet/tcp.h>
+
 Socket::~Socket()
 {
     sockops::close(_sockfd);
@@ -14,6 +16,14 @@ Socket::setReuseAddr (bool on)
 {
     int optval = on ? 1 : 0;
     ::setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR,
+                 &optval, static_cast<socklen_t>(sizeof(optval)));
+}
+
+void
+Socket::setTcpNoDelay (bool on)
+{
+    int optval = on ? 1 : 0;
+    ::setsockopt(_sockfd, IPPROTO_TCP, TCP_NODELAY,
                  &optval, static_cast<socklen_t>(sizeof(optval)));
 }
 

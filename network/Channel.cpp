@@ -4,6 +4,7 @@
 #include "Poller.h"
 #include "Channel.h"
 
+// NOTE: use Level Trigger
 constexpr int kNoneEvent = 0;
 constexpr int kReadEvent = EPOLLIN | EPOLLPRI;
 constexpr int kWriteEvent = EPOLLOUT;
@@ -102,6 +103,7 @@ Channel::update ()
     return _loop->updateChannel(this);
 }
 
+// run in loop thread
 void
 Channel::handleEvent ()
 {
